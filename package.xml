@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>autopilot-simulator</name>
+  <name>autopilot_simulator</name>
   <version>0.0.0</version>
-  <description>The autopilot-simulator package</description>
+  <description>The autopilot_simulator package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

@@ -1,0 +1,78 @@
+<robot>
+  <robot_specifications>
+    <!-- Side of frame = 318.2mm, propeller = 240mm, diag of frame = 450mm -->
+    <footprint>
+        <footprint_specifications>
+            <points>
+                <point>
+                    <x>-0.28</x>
+                    <y>-0.28</y>
+                </point>
+                <point>
+                    <x>0.28</x>
+                    <y>-0.28</y>
+                </point>
+                <point>
+                    <x>0.28</x>
+                    <y>0.28</y>
+                </point>
+                <point>
+                    <x>-0.28</x>
+                    <y>0.28</y>
+                </point>
+            </points>
+        </footprint_specifications>
+    </footprint>
+
+    <kinematic>
+      <filename>
+        kinematic_models/omni_kinematic.xml
+      </filename>
+    </kinematic>
+
+    <sonar>
+      <filename>range_sensors/hc-sr05.xml</filename>
+      <sonar_specifications>
+        <pose>
+          <x>0.05</x>
+          <y>0</y>
+          <theta>0</theta>
+        </pose>
+      </sonar_specifications>
+    </sonar>
+    
+    <sonar>
+      <filename>range_sensors/hc-sr05.xml</filename>
+      <sonar_specifications>
+        <pose>
+          <x>0</x>
+          <y>0.05</y>
+          <theta>1.57</theta>
+        </pose>
+      </sonar_specifications>
+    </sonar>
+
+    <sonar>
+      <filename>range_sensors/hc-sr05.xml</filename>
+      <sonar_specifications>
+        <pose>
+          <x>-0.05</x>
+          <y>0</y>
+          <theta>3.14</theta>
+        </pose>
+      </sonar_specifications>
+    </sonar>
+
+    <sonar>
+      <filename>range_sensors/hc-sr05.xml</filename>
+      <sonar_specifications>
+        <pose>
+          <x>0</x>
+          <y>-0.05</y>
+          <theta>-1.57</theta>
+        </pose>
+      </sonar_specifications>
+    </sonar>
+
+  </robot_specifications>
+</robot>

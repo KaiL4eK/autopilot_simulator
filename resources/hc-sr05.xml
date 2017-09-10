@@ -1,0 +1,20 @@
+<sonar>
+  <sonar_specifications>
+    <!-- Resolution: 0.0003 -->
+    <cone_angle>0.5236</cone_angle>
+    <frequency>40</frequency>
+    <max_range>4.5</max_range>
+    <min_range>0.002</min_range>
+
+    <pose>
+      <x>0.1</x>
+      <y>0</y>
+      <theta>0</theta>
+    </pose>
+
+    <noise>
+      <filename>noises/noise_gauss.xml</filename>
+    </noise>
+
+  </sonar_specifications>
+</sonar>
