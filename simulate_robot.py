@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import cv2
 import numpy as np
 import math as m
@@ -41,18 +43,21 @@ class Point:
 
 class CircleObstacle(SimObject):
     def __init__ (self, x=0, y=0, radius=0):
-        super(self.__class__, self).__init__(x, y, 0)
+        # super(self.__class__, self).__init__(x, y, 0)
+        super().__init__(x, y, 0)
         self.r      = radius
 
 
 class CircleTarget(SimObject):
     def __init__ (self, x=0, y=0):
-        super(self.__class__, self).__init__(x, y, 0)
+        # super(self.__class__, self).__init__(x, y, 0)
+        super().__init__(x, y, 0)
         self.r      = 0.01
 
 class Robot(SimObject):
     def __init__ (self, x=0, y=0, theta=0):
-        super(self.__class__, self).__init__(x, y, theta)
+        # super(self.__class__, self).__init__(x, y, theta)
+        super().__init__(x, y, theta)
         self.r      = 0.56
         self.reset_speed()
 
@@ -116,7 +121,7 @@ class SimManager:
                             radius=int(self.target.r/resolution_m_px), 
                             thickness=-1, color=(255, 0, 0))
 
-        cv2.imshow('1', img)
+        cv2.imshow('2', img)
         cv2.waitKey(1)
 
     def sample_step (self, inputs):
@@ -173,20 +178,20 @@ class SimManager:
         if key == 27:
             quit()
         if key == 82:
-            print "up"
+            print("up")
             return (1, 0, 0)
         elif key == 84:
-            print "down"
+            print("down")
             return (-1, 0, 0)
         elif key == 81:
-            print "left"
+            print("left")
             return (0, -1, 0)
         elif key == 83:
-            print "right"
+            print("right")
             return (0, 1, 0)
         # 255 is what the console returns when there is no key press...
         # elif key != 255:
-            # print(key)
+            # print(key))
         else:
             return (0, 0, 0)
 

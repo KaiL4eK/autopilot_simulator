@@ -25,28 +25,44 @@ resol = 0.01
 def eval_genome(genome, config, img):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
 
-    sim = SimManager(dt=0.005, # 200 Hz
-                        bot=Robot(x=2, y=2, theta=0),
+    sim1 = SimManager(dt=0.005, # 200 Hz
+                        bot=Robot(x=1, y=2, theta=0),
                         target=CircleTarget(x=13, y=7),
                         obstacles=[], map_size_m=map_shape)
 
-    while sim.t < simulation_seconds:
+    sim2 = SimManager(dt=0.005, # 200 Hz
+                        bot=Robot(x=2, y=6, theta=0),
+                        target=CircleTarget(x=13, y=7),
+                        obstacles=[], map_size_m=map_shape)
 
-        inputs = sim.get_state()
-        # print(inputs)
+    sim3 = SimManager(dt=0.005, # 200 Hz
+                        bot=Robot(x=11, y=1, theta=0),
+                        target=CircleTarget(x=13, y=7),
+                        obstacles=[], map_size_m=map_shape)
 
-        action = net.activate(inputs)
+    sims = [sim1, sim2, sim3]
+    fitnesses = [0, 0, 0]
 
-        # print(action)
-        
-        if not sim.sample_step(action):
-            break
+    for i, sim in enumerate(sims):
+        while sim.t < simulation_seconds:
 
-    for point in sim.path:
-        cv2.circle(img, center=(int(point[0] / resol), int(point[1] / resol)), 
-                        radius=1, thickness=-1, color=(255, 0, 0))
+            inputs = sim.get_state()
+            # print(inputs)
 
-    return -sim.get_fitness()
+            action = net.activate(inputs)
+
+            # print(action)
+            
+            if not sim.sample_step(action):
+                break
+
+        for point in sim.path:
+            cv2.circle(img, center=(int(point[0] / resol), int(point[1] / resol)), 
+                            radius=1, thickness=-1, color=(255, 0, 0))
+
+        fitnesses[i] = -sim.get_fitness()
+
+    return min(fitnesses)
 
 
 def eval_genomes(genomes, config):
@@ -83,6 +99,8 @@ def run():
         pickle.dump(winner, f)
 
     print(winner)
+
+    cv2.waitKey(0)
 
     # visualize.plot_stats(stats, ylog=True, view=True, filename="feedforward-fitness.svg")
     # visualize.plot_species(stats, view=True, filename="feedforward-speciation.svg")
