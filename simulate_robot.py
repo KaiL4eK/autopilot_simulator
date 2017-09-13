@@ -125,13 +125,13 @@ class SimManager:
         cv2.waitKey(1)
 
     def sample_step (self, inputs):
-        input_norm = np.linalg.norm(inputs)
-        if input_norm > 1:
-            inputs /= input_norm
+        if max(inputs) > 1:
+            print('Norm is incorrect %s' % inputs)
+            inputs /= max(inputs)
 
         self.bot.ux = inputs[0] * 10
         self.bot.uy = inputs[1] * 10
-        self.bot.wz = 0 #inputs[2] * 10
+        self.bot.wz = inputs[2] * 10
 
         self.bot.sample_step(self.dt)
 
@@ -194,6 +194,16 @@ class SimManager:
             # print(key))
         else:
             return (0, 0, 0)
+
+class SonarSensor:
+    def __init__ (self, angle=90, distance_max=4.5, distance_min=0.1):
+        self.angle = angle
+        self.dist_max = distance_max
+        self.dist_min = distance_min
+        self.nrows    = angle / 0.1
+
+        self.row_ranges = np.zeros(shape=(self.nrows), dtype=np.uint8)
+
 
 
 if __name__ == '__main__':
