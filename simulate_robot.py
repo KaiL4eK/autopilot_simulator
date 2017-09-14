@@ -195,15 +195,17 @@ class SimManager:
         else:
             return (0, 0, 0)
 
-class SonarSensor:
-    def __init__ (self, angle=90, distance_max=4.5, distance_min=0.1):
+class SonarSensor(SimObject):
+    def __init__ (self, x=0, y=0, theta=0, angle=90, distance_max=4.5, distance_min=0.1):
+        super().__init__(x, y, 0)
+
         self.angle = angle
         self.dist_max = distance_max
         self.dist_min = distance_min
         self.nrows    = angle / 0.1
+        self.dangle   = self.angle / self.nrows
 
         self.row_ranges = np.zeros(shape=(self.nrows), dtype=np.uint8)
-
 
 
 if __name__ == '__main__':
