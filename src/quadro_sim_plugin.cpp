@@ -24,21 +24,34 @@ namespace gazebo
 
         }
 
+        double torque_x = 0.0001;
+
+        #define SIGN(x) ((x > 0) ? 1 : ((x < 0) ? -1 : 0))
+
         // Called by the world update start event
         void OnUpdate(const common::UpdateInfo & /*_info*/)
         {
             // Apply a small linear velocity to the model.
             // model->SetLinearVel(math::Vector3(.03, 0, 0));
             
-            math::Vector3 linear_vel = link->GetRelativeLinearVel();
-            printf("%f / %f / %f\n", linear_vel.x, linear_vel.y, linear_vel.z);
+            math::Pose      pose        = model->GetWorldPose();
+            math::Vector3   rot         = pose.rot.GetAsEuler();
+            math::Vector3   linear_vel  = link->GetRelativeLinearVel();
+            // printf("%f / %f / %f\n", pose.pos.x, pose.pos.y, pose.pos.z);
+            printf("%f / %f / %f / %f / %f\n", rot.x, rot.y, rot.z, rot.x * 180 / M_PI * SIGN(torque_x), torque_x);
 
             math::Vector3 force = link->GetRelativeForce();
-            printf("%f / %f / %f\n", force.x, force.y, force.z);
+            // printf("%f / %f / %f\n", force.x, force.y, force.z);
 
-            usleep( 1 * 1000 );
+            // usleep( 1 * 1000 );
 
-            link->AddRelativeForce(math::Vector3(0, 0, 0.02));
+            
+
+            if ( rot.x * 180 / M_PI * SIGN(torque_x) > 10 )
+                torque_x *= -1;
+
+            link->AddRelativeTorque(math::Vector3(torque_x, 0, 0));
+            link->AddRelativeForce(math::Vector3(0, 0, 0));
         }
 
         private:
