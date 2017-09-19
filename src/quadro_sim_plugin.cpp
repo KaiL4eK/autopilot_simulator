@@ -26,6 +26,7 @@ namespace gazebo
                 boost::bind(&ModelPush::OnUpdate, this, _1));
 
 
+            world->SetPaused(true);
         }
 
         double torque_x = 0.0001;
