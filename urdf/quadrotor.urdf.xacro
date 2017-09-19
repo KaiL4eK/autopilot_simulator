@@ -9,7 +9,7 @@
   <!-- <xacro:macro name="quadrotor_base_macro"> -->
   <link name="base_link">
     <inertial>
-      <mass value="1.477" />
+      <mass value="1" />
       <origin xyz="0 0 0" />
       <inertia ixx="0.01152" ixy="0.0" ixz="0.0" iyy="0.01152" iyz="0.0" izz="0.0218" />
     </inertial>
@@ -29,6 +29,40 @@
     </collision>
   </link>
 
+  <gazebo>
+    <plugin name="quadro_sim" filename="libquadro_sim.so">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>0.0</updateRate>
+    </plugin>
+  </gazebo>
+
+  <gazebo reference="base_link">
+    <sensor name="contact_sensor" type="contact">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <contact>
+        <collision>base_link_collision</collision>
+      </contact>
+      <plugin name="gripper_bumper" filename="libgazebo_ros_bumper.so">
+        <bumperTopicName>contact_sensor_state</bumperTopicName>
+        <update_rate>100</update_rate>
+        <always_on>true</always_on>
+        <frameName>gripper</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+<!--   <sensor:contact name="contact_sensor">
+    <geom>base_link</geom>
+    <updateRate>10.0</updateRate>
+    <controller:gazebo_ros_bumper name="gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>20.0</updateRate>
+        <bumperTopicName>bumper</bumperTopicName>
+        <interface:bumper name="bumper_iface" />
+    </controller:gazebo_ros_bumper>
+  </sensor:contact> -->
+
   <!-- Sonar height sensor -->
 <!--   <xacro:sonar_sensor name="sonar_h" parent="base_link" ros_topic="sonar_height" update_rate="40" min_range="0.02" max_range="4.5" field_of_view="${40*pi/180}" ray_count="30">
     <origin xyz="0.0 0.0 -0.05" rpy="0 ${90*pi/180} 0"/>
@@ -42,7 +76,7 @@
     <origin xyz="-0.15 0.0 -0.02" rpy="0 0 ${pi}"/>
   </xacro:sonar_sensor>
 
-  <xacro:sonar_sensor name="sonar_l" parent="base_link" ros_topic="left" update_rate="40" min_range="0.02" max_range="4.5" field_of_view="${40*pi/180}" ray_count="40">
+  <xacro:sonar_sensor name="sonar_l" parent="base_link" ros_topic="sonar_left" update_rate="40" min_range="0.02" max_range="4.5" field_of_view="${40*pi/180}" ray_count="40">
     <origin xyz="0.0 0.15 -0.02" rpy="0 0 ${90*pi/180}"/>
   </xacro:sonar_sensor>
 
