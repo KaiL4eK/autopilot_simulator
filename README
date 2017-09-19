@@ -1,0 +1,4 @@
+
+
+apt install ros-kinetic-hector-models ros-kinetic-hector-pose-estimation ros-kinetic-hector-gazebo-plugins ros-kinetic-hardware-interface ros-kinetic-controller-interface ros-kinetic-gazebo-ros-control
+
