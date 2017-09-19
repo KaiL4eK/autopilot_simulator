@@ -22,6 +22,7 @@
     </visual>
 
     <collision>
+      <max_contacts>1</max_contacts>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
         <mesh filename="package://hector_quadrotor_description/meshes/quadrotor/quadrotor_base.stl"/>
@@ -39,13 +40,13 @@
   <gazebo reference="base_link">
     <sensor name="contact_sensor" type="contact">
       <always_on>true</always_on>
-      <update_rate>100</update_rate>
+      <update_rate>10</update_rate>
       <contact>
         <collision>base_link_collision</collision>
       </contact>
       <plugin name="gripper_bumper" filename="libgazebo_ros_bumper.so">
         <bumperTopicName>contact_sensor_state</bumperTopicName>
-        <update_rate>100</update_rate>
+        <update_rate>10</update_rate>
         <always_on>true</always_on>
         <frameName>gripper</frameName>
       </plugin>
