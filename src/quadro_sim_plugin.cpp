@@ -3,6 +3,7 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
 #include <stdio.h>
+#include <ros/console.h>
 
 namespace gazebo
 {
@@ -15,7 +16,7 @@ namespace gazebo
             // Store the pointer to the model
             model   = _parent;
             link    = model->GetLink();
-            physics::WorldPtr world = model->GetWorld();
+            world = model->GetWorld();
             physics::PhysicsEnginePtr eng = world->GetPhysicsEngine();
 
             eng->SetMaxStepSize(0.001);
@@ -38,13 +39,14 @@ namespace gazebo
         {
             // Apply a small linear velocity to the model.
             // model->SetLinearVel(math::Vector3(.03, 0, 0));
-            
+            common::Time current_time = world->GetSimTime();
+
             math::Pose      pose        = model->GetWorldPose();
             math::Vector3   rot         = pose.rot.GetAsEuler();
             math::Vector3   linear_vel  = link->GetRelativeLinearVel();
             // printf("%f / %f / %f\n", pose.pos.x, pose.pos.y, pose.pos.z);
             // printf("%f / %f / %f / %f / %f\n", rot.x, rot.y, rot.z, rot.x * 180 / M_PI * SIGN(torque_x), torque_x);
-            printf("%f / %f / %f\n", linear_vel.x, linear_vel.y, linear_vel.z);
+            printf("%f / %f / %f / %f / %d\n", linear_vel.x, linear_vel.y, linear_vel.z, current_time.Double(), world->GetIterations());
             
             math::Vector3 force = link->GetRelativeForce();
             // printf("%f / %f / %f\n", force.x, force.y, force.z);
@@ -60,9 +62,12 @@ namespace gazebo
             */
 
             link->AddRelativeForce(math::Vector3(0.01, 0, 0));  // [Newtons]
+
+            // ROS_INFO_STREAM_NAMED("quadrotor_sim", "Sent a trigger message at t = " << current_time.Double());
         }
 
         private:
+            physics::WorldPtr world;
             physics::LinkPtr link;
             physics::ModelPtr model;
             event::ConnectionPtr updateConnection;
