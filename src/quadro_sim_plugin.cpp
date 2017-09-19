@@ -28,6 +28,7 @@ namespace gazebo
 
 
             world->SetPaused(true);
+            printf("%d\n", world->GetIterations());
         }
 
         double torque_x = 0.0001;
