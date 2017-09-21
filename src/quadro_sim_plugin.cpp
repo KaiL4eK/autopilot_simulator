@@ -16,6 +16,11 @@ namespace gazebo
         void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
         {
             // Store the pointer to the model
+            // node.reset(new transport::Node());
+            // node->Init(_parent->GetName());
+            // pub = node->Advertise<msgs::WorldControl>("~/world_control");
+
+
             model   = _parent;
             link    = model->GetLink();
             world = model->GetWorld();
@@ -30,8 +35,9 @@ namespace gazebo
 
             ROS_INFO_STREAM("Sensors: " << model->GetSensorCount());
 
-            physics::ContactManager *cntc_mgr = eng->GetContactManager();
-            ROS_INFO_STREAM("Contacts: " << cntc_mgr->GetContactCount());
+            cntc_mgr = eng->GetContactManager();
+            
+            ROS_INFO_STREAM("Sensors init: " << world->SensorsInitialized());
 
             // GAZEBO_SENSORS_USING_DYNAMIC_POINTER_CAST;
             // sensors::ContactSensorPtr child = dynamic_pointer_cast<sensors::ContactSensor>( world->GetEntity("contact_sensor") );
@@ -42,11 +48,19 @@ namespace gazebo
 
             world->SetPaused(true);
             world->Reset();
-            initial_iter = world->GetIterations();
+
+            world->SetPaused(false);
+            // world->PrintEntityTree();
+
+            // initial_iter = world->GetIterations();
+            // world->RunBlocking(25);
+
+            std::cout << "Publishing Load." << std::endl;
         }
 
         uint32_t initial_iter = 0;
         double torque_x = 0.0001;
+        int skip = 0;
 
         #define SIGN(x) ((x > 0) ? 1 : ((x < 0) ? -1 : 0))
 
@@ -62,8 +76,8 @@ namespace gazebo
             math::Vector3   linear_vel  = link->GetRelativeLinearVel();
             // printf("%f / %f / %f\n", pose.pos.x, pose.pos.y, pose.pos.z);
             // printf("%f / %f / %f / %f / %f\n", rot.x, rot.y, rot.z, rot.x * 180 / M_PI * SIGN(torque_x), torque_x);
-            printf("%f / %f / %f\n", linear_vel.x, linear_vel.y, linear_vel.z);
-            printf("%d / %d\n", world->GetIterations() % 25, world->GetIterations() - initial_iter);
+            // printf("%f / %f / %f\n", linear_vel.x, linear_vel.y, linear_v    el.z);
+            printf("%d / %d\n", world->GetIterations() % 25, world->GetIterations());
             
             math::Vector3 force = link->GetRelativeForce();
             // printf("%f / %f / %f\n", force.x, force.y, force.z);
@@ -78,12 +92,26 @@ namespace gazebo
             link->AddRelativeTorque(math::Vector3(torque_x, 0, 0));
             */
 
+            ROS_INFO_STREAM("Contacts: " << cntc_mgr->GetContactCount());
             link->AddRelativeForce(math::Vector3(0.01, 0, 0));  // [Newtons]
 
+            if ( skip < 25 )
+            {
+                skip++;
+                world->Step(1);
+            } else {
+                world->SetPaused(true);
+            }
+
+            std::cout << "Publishing OnUpdate." << std::endl;
             // ROS_INFO_STREAM_NAMED("quadrotor_sim", "Sent a trigger message at t = " << current_time.Double());
         }
 
         private:
+            // transport::PublisherPtr pub;
+            // transport::NodePtr node;
+
+            physics::ContactManager *cntc_mgr;
             physics::WorldPtr world;
             physics::LinkPtr link;
             physics::ModelPtr model;

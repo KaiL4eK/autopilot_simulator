@@ -28,7 +28,6 @@
         </geometry>
       </collision>
     </link>
-
     <gazebo reference="${name}_link">
       <sensor type="ray" name="${name}">
         <always_on>true</always_on>
@@ -58,7 +57,6 @@
         </ray>
 
         <plugin name="gazebo_ros_${name}_controller" filename="libhector_gazebo_ros_sonar.so">
-          <gaussianNoise>0.005</gaussianNoise>
           <topicName>${ros_topic}</topicName>
           <frameId>${name}_link</frameId>
         </plugin>

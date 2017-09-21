@@ -3,7 +3,7 @@
 <robot name="quadrotor" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:property name="sonar_hor_shift" value="0.15" />
   <xacro:property name="sonar_ver_shift" value="0.02" />
-  <xacro:property name="sonar_sim_update_rate" value="80" />
+  <xacro:property name="sonar_sim_update_rate" value="100" />
 
   <xacro:include filename="$(find autopilot_simulator)/urdf/sonar_sensor.urdf.xacro" />
   <!-- <xacro:property name="pi" value="3.1415926535897931" /> -->
@@ -47,24 +47,13 @@
       <contact>
         <collision>base_link_collision</collision>
       </contact>
-      <plugin name="gripper_bumper" filename="libgazebo_ros_bumper.so">
+<!--       <plugin name="gripper_bumper" filename="libgazebo_ros_bumper.so">
         <bumperTopicName>contact_sensor_state</bumperTopicName>
         <always_on>true</always_on>
         <frameName>gripper</frameName>
-      </plugin>
+      </plugin> -->
     </sensor>
   </gazebo>
-
-<!--   <sensor:contact name="contact_sensor">
-    <geom>base_link</geom>
-    <updateRate>10.0</updateRate>
-    <controller:gazebo_ros_bumper name="gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
-        <alwaysOn>true</alwaysOn>
-        <updateRate>20.0</updateRate>
-        <bumperTopicName>bumper</bumperTopicName>
-        <interface:bumper name="bumper_iface" />
-    </controller:gazebo_ros_bumper>
-  </sensor:contact> -->
 
   <!-- Sonar height sensor -->
 <!--   <xacro:sonar_sensor name="sonar_h" parent="base_link" ros_topic="sonar_height" update_rate="40" min_range="0.02" max_range="4.5" field_of_view="${40*pi/180}" ray_count="30">
