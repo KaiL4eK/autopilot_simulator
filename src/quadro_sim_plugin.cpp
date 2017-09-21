@@ -4,6 +4,8 @@
 #include <gazebo/common/common.hh>
 #include <stdio.h>
 #include <ros/console.h>
+#include <gazebo/common/Exception.hh>
+#include <map>
 
 namespace gazebo
 {
@@ -26,11 +28,24 @@ namespace gazebo
             updateConnection = event::Events::ConnectWorldUpdateBegin(
                 boost::bind(&ModelPush::OnUpdate, this, _1));
 
+            ROS_INFO_STREAM("Sensors: " << model->GetSensorCount());
+
+            physics::ContactManager *cntc_mgr = eng->GetContactManager();
+            ROS_INFO_STREAM("Contacts: " << cntc_mgr->GetContactCount());
+
+            // GAZEBO_SENSORS_USING_DYNAMIC_POINTER_CAST;
+            // sensors::ContactSensorPtr child = dynamic_pointer_cast<sensors::ContactSensor>( world->GetEntity("contact_sensor") );
+            // if ( child == NULL )
+            // {
+            //     ROS_INFO_STREAM("No child with name 'contact_sensor'");
+            // }
 
             world->SetPaused(true);
-            printf("%d\n", world->GetIterations());
+            world->Reset();
+            initial_iter = world->GetIterations();
         }
 
+        uint32_t initial_iter = 0;
         double torque_x = 0.0001;
 
         #define SIGN(x) ((x > 0) ? 1 : ((x < 0) ? -1 : 0))
@@ -47,7 +62,8 @@ namespace gazebo
             math::Vector3   linear_vel  = link->GetRelativeLinearVel();
             // printf("%f / %f / %f\n", pose.pos.x, pose.pos.y, pose.pos.z);
             // printf("%f / %f / %f / %f / %f\n", rot.x, rot.y, rot.z, rot.x * 180 / M_PI * SIGN(torque_x), torque_x);
-            printf("%f / %f / %f / %f / %d\n", linear_vel.x, linear_vel.y, linear_vel.z, current_time.Double(), world->GetIterations());
+            printf("%f / %f / %f\n", linear_vel.x, linear_vel.y, linear_vel.z);
+            printf("%d / %d\n", world->GetIterations() % 25, world->GetIterations() - initial_iter);
             
             math::Vector3 force = link->GetRelativeForce();
             // printf("%f / %f / %f\n", force.x, force.y, force.z);

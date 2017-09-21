@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 
 <robot name="quadrotor" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="sonar_hor_shift" value="0.15" />
+  <xacro:property name="sonar_ver_shift" value="0.02" />
+  <xacro:property name="sonar_sim_update_rate" value="80" />
 
   <xacro:include filename="$(find autopilot_simulator)/urdf/sonar_sensor.urdf.xacro" />
   <!-- <xacro:property name="pi" value="3.1415926535897931" /> -->
@@ -33,20 +36,19 @@
   <gazebo>
     <plugin name="quadro_sim" filename="libquadro_sim.so">
       <alwaysOn>true</alwaysOn>
-      <updateRate>0.0</updateRate>
+      <updateRate>0</updateRate>
     </plugin>
   </gazebo>
 
   <gazebo reference="base_link">
     <sensor name="contact_sensor" type="contact">
       <always_on>true</always_on>
-      <update_rate>10</update_rate>
+      <update_rate>0</update_rate>
       <contact>
         <collision>base_link_collision</collision>
       </contact>
       <plugin name="gripper_bumper" filename="libgazebo_ros_bumper.so">
         <bumperTopicName>contact_sensor_state</bumperTopicName>
-        <update_rate>10</update_rate>
         <always_on>true</always_on>
         <frameName>gripper</frameName>
       </plugin>
@@ -69,20 +71,20 @@
     <origin xyz="0.0 0.0 -0.05" rpy="0 ${90*pi/180} 0"/>
   </xacro:sonar_sensor> -->
 
-  <xacro:sonar_sensor name="sonar_f" parent="base_link" ros_topic="sonar_front" update_rate="40" min_range="0.02" max_range="4.5" field_of_view="${40*pi/180}" ray_count="40">
-    <origin xyz="0.15 0.0 -0.02" rpy="0 0 0"/>
+  <xacro:sonar_sensor name="sonar_f" parent="base_link" ros_topic="sonar_front" update_rate="${sonar_sim_update_rate}" min_range="0.02" max_range="4.5" field_of_view="${40*pi/180}" ray_count="40">
+    <origin xyz="${sonar_hor_shift} 0.0 -${sonar_ver_shift}" rpy="0 0 0"/>
   </xacro:sonar_sensor>
 
-  <xacro:sonar_sensor name="sonar_b" parent="base_link" ros_topic="sonar_back" update_rate="40" min_range="0.02" max_range="4.5" field_of_view="${40*pi/180}" ray_count="40">
-    <origin xyz="-0.15 0.0 -0.02" rpy="0 0 ${pi}"/>
+  <xacro:sonar_sensor name="sonar_b" parent="base_link" ros_topic="sonar_back" update_rate="${sonar_sim_update_rate}" min_range="0.02" max_range="4.5" field_of_view="${40*pi/180}" ray_count="40">
+    <origin xyz="-${sonar_hor_shift} 0.0 -${sonar_ver_shift}" rpy="0 0 ${pi}"/>
   </xacro:sonar_sensor>
 
-  <xacro:sonar_sensor name="sonar_l" parent="base_link" ros_topic="sonar_left" update_rate="40" min_range="0.02" max_range="4.5" field_of_view="${40*pi/180}" ray_count="40">
-    <origin xyz="0.0 0.15 -0.02" rpy="0 0 ${90*pi/180}"/>
+  <xacro:sonar_sensor name="sonar_l" parent="base_link" ros_topic="sonar_left" update_rate="${sonar_sim_update_rate}" min_range="0.02" max_range="4.5" field_of_view="${40*pi/180}" ray_count="40">
+    <origin xyz="0.0 ${sonar_hor_shift} -${sonar_ver_shift}" rpy="0 0 ${90*pi/180}"/>
   </xacro:sonar_sensor>
 
-  <xacro:sonar_sensor name="sonar_r" parent="base_link" ros_topic="sonar_right" update_rate="40" min_range="0.02" max_range="4.5" field_of_view="${40*pi/180}" ray_count="40">
-    <origin xyz="0.0 -0.15 -0.02" rpy="0 0 ${-90*pi/180}"/>
+  <xacro:sonar_sensor name="sonar_r" parent="base_link" ros_topic="sonar_right" update_rate="${sonar_sim_update_rate}" min_range="0.02" max_range="4.5" field_of_view="${40*pi/180}" ray_count="40">
+    <origin xyz="0.0 -${sonar_hor_shift} -${sonar_ver_shift}" rpy="0 0 ${-90*pi/180}"/>
   </xacro:sonar_sensor>
 
   <!-- </xacro:macro> -->
