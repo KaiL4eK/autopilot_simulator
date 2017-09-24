@@ -58,7 +58,7 @@ find_package(gazebo REQUIRED)
 ## Generate services in the 'srv' folder
 add_service_files(
 	FILES
-	QuadroData.srv
+	QuadroControlData.srv
 )
 
 ## Generate actions in the 'action' folder

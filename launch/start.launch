@@ -25,9 +25,9 @@
     "/> -->
   <arg name="tf_prefix" default="$(optenv ROS_NAMESPACE)"/>
 
-  <arg name="x" default="0.0"/>
-  <arg name="y" default="0.0"/>
-  <arg name="z" default="0.3"/>
+  <arg name="x" default="-15.0"/>
+  <arg name="y" default="15.0"/>
+  <arg name="z" default="1"/>
 <!-- 
   <arg name="use_ground_truth_for_tf" default="true" />
   <arg name="use_ground_truth_for_control" default="true" />
@@ -99,5 +99,7 @@
            -z $(arg z)
            -model $(arg name)"
         respawn="false" output="screen"/>
+
+  <node name="learn_node" pkg="autopilot_simulator" type="controller.py" output="screen" />
 
 </launch>

@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import os
 import pickle
+import time
 
 # import cart_pole
 
@@ -14,33 +15,33 @@ import visualize
 
 from simulate_robot import *
 
-runs_per_net = 5
 simulation_seconds = 10.0
 
 map_shape = (15, 8)                # meters
 initial_state = (2, map_shape[1] / 2)   # x, y
 resol = 0.01
+dt = 1/1000 # 200 Hz
 
 # Use the NN network phenotype and the discrete actuator force function.
 def eval_genome(genome, config, img):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
 
-    sim1 = SimManager(dt=0.005, # 200 Hz
+    sim1 = SimManager(dt=dt,
                         bot=Robot(x=1, y=2, theta=0),
                         target=CircleTarget(x=13, y=7),
                         obstacles=[], map_size_m=map_shape)
 
-    sim2 = SimManager(dt=0.005, # 200 Hz
-                        bot=Robot(x=2, y=6, theta=0),
-                        target=CircleTarget(x=13, y=7),
-                        obstacles=[], map_size_m=map_shape)
+    # sim2 = SimManager(dt=dt,
+    #                     bot=Robot(x=2, y=6, theta=0),
+    #                     target=CircleTarget(x=13, y=7),
+    #                     obstacles=[], map_size_m=map_shape)
 
-    sim3 = SimManager(dt=0.005, # 200 Hz
-                        bot=Robot(x=11, y=1, theta=0),
-                        target=CircleTarget(x=13, y=7),
-                        obstacles=[], map_size_m=map_shape)
+    # sim3 = SimManager(dt=dt,
+    #                     bot=Robot(x=11, y=1, theta=0),
+    #                     target=CircleTarget(x=13, y=7),
+    #                     obstacles=[], map_size_m=map_shape)
 
-    sims = [sim1, sim2, sim3]
+    sims = [sim1]
     fitnesses = [0, 0, 0]
 
     for i, sim in enumerate(sims):
@@ -57,8 +58,10 @@ def eval_genome(genome, config, img):
                 break
 
         for point in sim.path:
-            cv2.circle(img, center=(int(point[0] / resol), int(point[1] / resol)), 
-                            radius=1, thickness=-1, color=(255, 0, 0))
+            time_rate = point[0] / simulation_seconds
+            cv2.circle(img, center=(int(point[1] / resol), int(point[2] / resol)), 
+                            radius=1, thickness=-1, 
+                            color=(255 - (255 * time_rate), 0, (255 * time_rate)))
 
         fitnesses[i] = -sim.get_fitness()
 
