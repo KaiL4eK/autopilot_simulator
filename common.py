@@ -1,4 +1,4 @@
-
+import math as m
 
 DET_TOLERANCE = 0.00000001
 
@@ -30,16 +30,27 @@ class Line:
     def __str__(self):
         return "(%s, %s)" % (self.p0, self.p1) 
 
-    def intersect_lines_r( l1, l2 ): 
+    def intersect_line( self, other_line ):
 
-        
+        DET = (-self.d.x * other_line.d.y + self.d.y * other_line.d.x)
 
-        #----------------------------------------------
-        DET = (-l1.d.x * l2.d.y + l1.d.y * l2.d.x)
-
-        if math.fabs(DET) < DET_TOLERANCE: 
+        if m.fabs(DET) < DET_TOLERANCE: 
             return -1
 
-        r = (-l2.d.y  * (l2.p0.x-l1.p0.x) +  l2.d.x * (l2.p0.y-l1.p0.y)) / DET
+        r = (-other_line.d.y  * (other_line.p0.x-self.p0.x) + other_line.d.x * (other_line.p0.y-self.p0.y)) / DET
+        s = (-self.d.y        * (other_line.p0.x-self.p0.x) + self.d.x       * (other_line.p0.y-self.p0.y)) / DET
+
+        if s < 0 or s > 1:
+            return -1
 
         return r
+
+    def from_ray(self, ray, length=1):
+        self.p0 = ray.p0
+        self.d  = Point(length * m.cos(m.radians(ray.theta)), length * m.sin(m.radians(ray.theta)))
+        self.p1 = self.p0 + self.d
+
+class Ray:
+    def __init__(self, p0=Point(0, 0), theta=0):
+        self.p0     = p0
+        self.theta  = theta

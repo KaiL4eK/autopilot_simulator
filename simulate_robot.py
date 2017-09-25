@@ -49,6 +49,7 @@ class State:
         self.theta  = theta
         self.psi    = psi
 
+
 class Physics:
     def __init__(self):
         pass
@@ -94,11 +95,16 @@ class Robot(SimObject):
         self.r      = 0.56
         self.reset_speed()
 
-        sensors_shift = 0.2
+        sensors_shift = 0.15
         self.sensors = [SonarSensor(base_dist=sensors_shift, stheta=0),  # Front
                         SonarSensor(base_dist=sensors_shift, stheta=-90),  # Right
                         SonarSensor(base_dist=sensors_shift, stheta=90),  # Left
                         SonarSensor(base_dist=sensors_shift, stheta=180)]  # Rear
+
+        # self.sensors = [SonarSensor(base_dist=sensors_shift, stheta=0)]  # Rear
+
+        for sonar in self.sensors:
+            sonar.update_base_point(x=self.x, y=self.y, theta=self.theta)
 
     def reset_speed (self):
         self.ux     = 0     # m / sec
@@ -107,15 +113,17 @@ class Robot(SimObject):
 
     def sample_step(self, dt=0):
         self.x      += self.ux * dt * m.cos(m.radians(self.theta)) \
-                        + self.uy * dt * m.sin(m.radians(self.theta))
+                        - self.uy * dt * m.sin(m.radians(self.theta))
         self.y      += self.uy * dt * m.cos(m.radians(self.theta)) \
-                        - self.ux * dt * m.sin(m.radians(self.theta))
+                        + self.ux * dt * m.sin(m.radians(self.theta))
         self.theta  += self.wz * dt
-        print(self.x, self.y, self.theta)
+
+        for sonar in self.sensors:
+            sonar.update_base_point(x=self.x, y=self.y, theta=self.theta)
+        # print(self.x, self.y, self.theta)
 
     def proccess_sonar_sensors(self, obstacles_lines):
         for sonar in self.sensors:
-            sonar.update_base_point(x=self.x, y=self.y, theta=self.theta)
             sonar.update(obstacles_lines)
 
 class SimManager:
@@ -144,7 +152,7 @@ class SimManager:
             for obstacle in self.obstacles:
                 if type(obstacle) is RectObstacle:
                     cv2.rectangle(img, (int(obstacle.ul.x / resolution_m_px), int(obstacle.ul.y / resolution_m_px)), 
-                                  (int(obstacle.lr.x / resolution_m_px), int(obstacle.lr.y / resolution_m_px)), 
+                                       (int(obstacle.lr.x / resolution_m_px), int(obstacle.lr.y / resolution_m_px)), 
                                   color=(0, 0, 255), thickness=-1)
 
         if self.bot:
@@ -157,9 +165,13 @@ class SimManager:
                             radius=int(self.bot.r/resolution_m_px), 
                             thickness=-1, color=bot_clr)
 
-            cv2.line(img,   pt1=(int(self.bot.x / resolution_m_px), int(self.bot.y / resolution_m_px)),
-                            pt2=(int((self.bot.x + m.cos(m.radians(self.bot.theta))) / resolution_m_px), 
-                                 int((self.bot.y - m.sin(m.radians(self.bot.theta))) / resolution_m_px)),
+            dir_line = Line()
+            dir_line.from_ray(ray=Ray(p0=Point(self.bot.x, self.bot.y), theta=self.bot.theta))
+            print("Bot position:", (self.bot.x, self.bot.y, self.bot.theta))
+            print("Line segment #1 runs from", dir_line.p0, "to", dir_line.p1)
+
+            cv2.line(img,   pt1=(int(dir_line.p0.x / resolution_m_px), int(dir_line.p0.y / resolution_m_px)),
+                            pt2=(int(dir_line.p1.x / resolution_m_px), int(dir_line.p1.y / resolution_m_px)),
                             color=(0, 255, 0),
                             thickness=1 )
 
@@ -168,12 +180,19 @@ class SimManager:
                 cv2.circle(img, center=(int(sonar_x / resolution_m_px), int(sonar_y / resolution_m_px)), 
                                 radius=2, thickness=-1, color=(0, 0, 0))
 
+                for ray in sonar.rays:
+                    cv2.line(img,   pt1=(int(ray.line.p0.x / resolution_m_px), int(ray.line.p0.y / resolution_m_px)),
+                                    pt2=(int(ray.line.p1.x / resolution_m_px), int(ray.line.p1.y / resolution_m_px)),
+                                    color=(0, 255 * i / len(self.bot.sensors), 0),
+                                    thickness=1 )
+
                 range = sonar.get_range()
-                left_angle, right_angle = sonar.get_left_right_angles(-self.bot.theta)
+                left_angle, right_angle = sonar.get_left_right_angles(self.bot.theta)
 
                 cv2.ellipse(img, center=(int(sonar_x / resolution_m_px), int(sonar_y / resolution_m_px)),
                                  axes=(int(range / resolution_m_px), int(range / resolution_m_px)), angle=0, startAngle=right_angle, endAngle=left_angle, 
-                                 color=(0, 255 * i / len(self.bot.sensors), 0), thickness=1)
+                                 color=(255, 255 * i / len(self.bot.sensors), 255), thickness=3)
+
 
             cv2.circle(img, center=(int(self.bot.x / resolution_m_px), int(self.bot.y / resolution_m_px)), 
                             radius=2, thickness=-1, color=(255, 0, 0))
@@ -196,16 +215,17 @@ class SimManager:
 
 
         cv2.imshow('2', cv2.flip(img, 0))
-        cv2.waitKey(1)
+        cv2.waitKey(30)
 
     def sample_step (self, inputs):
-        if max(inputs) > 1:
-            print('Norm is incorrect %s' % inputs)
-            inputs /= max(inputs)
+        inputs = np.clip(inputs, -1, 1)
+
+        # if max(inputs) > 1:
+            # print('Norm is incorrect %s' % inputs)
+            # inputs /= max(inputs)
 
         self.t += self.dt
 
-        self.bot.proccess_sonar_sensors(self.obstacles[0].lines)
 
         # if self.t - self.prev_control_upd_t >= 5/1000:
         self.bot.ux = inputs[0] * 100
@@ -214,6 +234,7 @@ class SimManager:
             # self.prev_control_upd_t = self.t
 
         self.bot.sample_step(self.dt)
+        self.bot.proccess_sonar_sensors(self.obstacles[0].lines)
 
         # if self.check_collision():
             # return False
@@ -266,24 +287,24 @@ class SimManager:
         # if the 'ESC' key is pressed, Quit
         if key == 27:
             quit()
-        if key == 82:
-            print("up")
+        if key == ord('w'):
+            # print("up")
             return (1, 0, 0)
-        elif key == 84:
-            print("down")
+        elif key == ord('s'):
+            # print("down")
             return (-1, 0, 0)
-        elif key == 81:
-            print("left")
+        elif key == ord('q'):
+            # print("rleft")
             return (0, 0, 1)
-        elif key == 83:
-            print("right")
+        elif key == ord('e'):
+            # print("rright")
             return (0, 0, -1)
         elif key == ord('a'):
-            print("left")
-            return (0, -1, 0)
-        elif key == ord('d'):
-            print("right")
+            # print("left")
             return (0, 1, 0)
+        elif key == ord('d'):
+            # print("right")
+            return (0, -1, 0)
 
         # 255 is what the console returns when there is no key press...
         # elif key != 255:
@@ -292,27 +313,29 @@ class SimManager:
             return (0, 0, 0)
 
 class SonarRay:
-    def __init__(self, theta=0):
-        self.theta  = theta
-        self.range  = 4.5
+    def __init__(self, theta=0, max_range=1):
+        self.theta      = theta
+        self.max_range  = max_range
+        self.range      = max_range
 
-        self.dir_theta  = theta
-        self.base_x     = 0
-        self.base_y     = 0
-
-    def reset(self):
-        self.range  = 4.5
+        self.line       = Line()
+        self.ray        = Ray()
 
     def update_base(self, x=0, y=0, theta=0):
-        self.base_x = x
-        self.base_y = y
-        self.dir_theta = theta + self.theta
+        self.ray.p0     = Point(x, y)
+        self.ray.theta  = theta + self.theta
+        self.line.from_ray(ray=self.ray, length=self.range)
 
     def update(self, lines):
+        self.line.from_ray(ray=self.ray, length=self.max_range)
+        self.range  = self.max_range
         for line in lines:
-            pass
-            # far_x = 
+            r = self.line.intersect_line(line)
+            if r > 0:
+                self.range = min([r * self.max_range, self.range])
 
+        self.line.from_ray(ray=self.ray, length=self.range)
+        return self.range
 
 class SonarSensor:
     def __init__ (self, base_dist=0, stheta=0, angle=40, distance_max=4.5, distance_min=0.02):
@@ -332,12 +355,12 @@ class SonarSensor:
         self.base_theta = 0
 
         for i in range(int(-angle/2), int((angle/2)+1) ):
-            self.rays.append(SonarRay(i))
+            self.rays.append(SonarRay(i, self.dist_max))
 
     def update_base_point (self, x=0, y=0, theta=0):
         self.base_theta = self.stheta + theta
         self.base_x = x + self.base_dist * m.cos(m.radians(self.base_theta))
-        self.base_y = y - self.base_dist * m.sin(m.radians(self.base_theta))
+        self.base_y = y + self.base_dist * m.sin(m.radians(self.base_theta))
 
         for ray in self.rays:
             ray.update_base(self.base_x, self.base_y, self.base_theta)
@@ -348,10 +371,6 @@ class SonarSensor:
         return (self.base_x, self.base_y)
 
     def get_range (self):
-        self.range = self.dist_max
-        for ray in self.rays:
-            self.range = min(ray.range, self.range)
-
         return self.range
 
     def get_left_right_angles (self, theta=0):
@@ -359,21 +378,23 @@ class SonarSensor:
                 theta + self.stheta - self.angle/2)
 
     def update(self, lines):
-
+        self.range = self.dist_max
         for ray in self.rays:
-            ray.reset()
-            ray.update(lines)
+            ray_range_m = ray.update(lines)
+
+            self.range = min([ray_range_m, self.range])
+
+        self.range = max([self.range, self.dist_min])
 
 
 if __name__ == '__main__':
     sim = SimManager(dt=0.001, # 200 Hz
                         bot=Robot(x=2, y=5, theta=0),
                         target=CircleTarget(x=18, y=5),
-                        obstacles=[RectObstacle(x=5, y=5, width=1, height=1)], map_size_m=(20, 10))
+                        obstacles=[RectObstacle(x=5, y=7, width=1, height=3)], map_size_m=(20, 10))
 
     while True:
 
-        
         
         inputs = sim.process_input()
 
@@ -381,3 +402,4 @@ if __name__ == '__main__':
             exit(1)
 
         sim.show_map(resolution_m_px=0.02)
+            
