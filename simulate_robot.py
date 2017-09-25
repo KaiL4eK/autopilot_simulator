@@ -5,10 +5,10 @@ import numpy as np
 import math as m
 
 #   Axis of map:
-#   ------x
 #   |y
 #   |
 #   |
+#   ------x
 
 
 class SimObject(object):
@@ -56,6 +56,7 @@ class Line:
     def __init__(self, p0=Point(0, 0), p1=Point(0, 0)):
         self.p0 = p0
         self.p1 = p1
+
         self.d  = p1-p0
 
 class State:
@@ -131,6 +132,11 @@ class Robot(SimObject):
         self.theta  += self.wz * dt
         print(self.x, self.y, self.theta)
 
+    def proccess_sonar_sensors(self, obstacles_lines):
+        for sonar in self.sensors:
+            sonar.update_base_point(x=self.x, y=self.y, theta=self.theta)
+            sonar.update(obstacles_lines)
+
 class SimManager:
     def __init__ (self, dt=0, bot=None, target=None, obstacles=None, map_size_m=(0, 0)):
         self.bot = bot
@@ -176,10 +182,17 @@ class SimManager:
                             color=(0, 255, 0),
                             thickness=1 )
 
-            for sonar in self.bot.sensors:
-                sonar_x, sonar_y = sonar.get_base_point(x=self.bot.x, y=self.bot.y, theta=self.bot.theta)
+            for i, sonar in enumerate(self.bot.sensors):
+                sonar_x, sonar_y = sonar.get_base_point()
                 cv2.circle(img, center=(int(sonar_x / resolution_m_px), int(sonar_y / resolution_m_px)), 
                                 radius=2, thickness=-1, color=(0, 0, 0))
+
+                range = sonar.get_range()
+                left_angle, right_angle = sonar.get_left_right_angles(-self.bot.theta)
+
+                cv2.ellipse(img, center=(int(sonar_x / resolution_m_px), int(sonar_y / resolution_m_px)),
+                                 axes=(int(range / resolution_m_px), int(range / resolution_m_px)), angle=0, startAngle=right_angle, endAngle=left_angle, 
+                                 color=(0, 255 * i / len(self.bot.sensors), 0), thickness=1)
 
             cv2.circle(img, center=(int(self.bot.x / resolution_m_px), int(self.bot.y / resolution_m_px)), 
                             radius=2, thickness=-1, color=(255, 0, 0))
@@ -201,7 +214,7 @@ class SimManager:
 
 
 
-        cv2.imshow('2', img)
+        cv2.imshow('2', cv2.flip(img, 0))
         cv2.waitKey(1)
 
     def sample_step (self, inputs):
@@ -210,6 +223,8 @@ class SimManager:
             inputs /= max(inputs)
 
         self.t += self.dt
+
+        self.bot.proccess_sonar_sensors(self.obstacles[0].lines)
 
         # if self.t - self.prev_control_upd_t >= 5/1000:
         self.bot.ux = inputs[0] * 100
@@ -298,8 +313,25 @@ class SimManager:
 class SonarRay:
     def __init__(self, theta=0):
         self.theta  = theta
+        self.range  = 4.5
 
-    # def 
+        self.dir_theta  = theta
+        self.base_x     = 0
+        self.base_y     = 0
+
+    def reset(self):
+        self.range  = 4.5
+
+    def update_base(self, x=0, y=0, theta=0):
+        self.base_x = x
+        self.base_y = y
+        self.dir_theta = theta + self.theta
+
+    def update(self, lines):
+        for line in lines:
+            pass
+            # far_x = 
+
 
 class SonarSensor:
     def __init__ (self, base_dist=0, stheta=0, angle=40, distance_max=4.5, distance_min=0.02):
@@ -312,15 +344,45 @@ class SonarSensor:
         self.dist_min = distance_min
 
         self.rays     = []
+        self.range    = 4.5
+
+        self.base_x     = 0
+        self.base_y     = 0
+        self.base_theta = 0
 
         for i in range(int(-angle/2), int((angle/2)+1) ):
             self.rays.append(SonarRay(i))
 
-    def get_base_point (self, x=0, y=0, theta=0):
-        base_x = x + self.base_dist * m.cos(m.radians(self.stheta + theta))
-        base_y = y - self.base_dist * m.sin(m.radians(self.stheta + theta))
+    def update_base_point (self, x=0, y=0, theta=0):
+        self.base_theta = self.stheta + theta
+        self.base_x = x + self.base_dist * m.cos(m.radians(self.base_theta))
+        self.base_y = y - self.base_dist * m.sin(m.radians(self.base_theta))
 
-        return (base_x, base_y)
+        for ray in self.rays:
+            ray.update_base(self.base_x, self.base_y, self.base_theta)
+
+        # print(self.base_theta, self.base_x, self.base_y)
+
+    def get_base_point (self):
+        return (self.base_x, self.base_y)
+
+    def get_range (self):
+        self.range = self.dist_max
+        for ray in self.rays:
+            self.range = min(ray.range, self.range)
+
+        return self.range
+
+    def get_left_right_angles (self, theta=0):
+        return (theta + self.stheta + self.angle/2, 
+                theta + self.stheta - self.angle/2)
+
+    def update(self, lines):
+
+        for ray in self.rays:
+            ray.reset()
+            ray.update(lines)
+
 
 if __name__ == '__main__':
     sim = SimManager(dt=0.001, # 200 Hz
@@ -330,10 +392,11 @@ if __name__ == '__main__':
 
     while True:
 
-        sim.show_map(resolution_m_px=0.02)
+        
         
         inputs = sim.process_input()
 
         if not sim.sample_step(inputs):
             exit(1)
 
+        sim.show_map(resolution_m_px=0.02)
