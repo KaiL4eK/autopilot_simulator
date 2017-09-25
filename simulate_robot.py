@@ -3,6 +3,7 @@ from __future__ import print_function
 import cv2
 import numpy as np
 import math as m
+from common import *
 
 #   Axis of map:
 #   |y
@@ -37,27 +38,7 @@ class SimObject(object):
 
         return (dx / dist, dy / dist)
 
-class Point:
-    def __init__(self, x=0, y=0):
-        self.x = x
-        self.y = y
 
-    def __add__(self, other):
-        return Point(self.x + other.x, self.y + other.y)
-
-    def __sub__(self, other):
-        return Point(self.x - other.x, self.y - other.y)
-
-    def get_int_tuple(self):
-        print((int(self.x), int(self.y)))
-        return 
-
-class Line:
-    def __init__(self, p0=Point(0, 0), p1=Point(0, 0)):
-        self.p0 = p0
-        self.p1 = p1
-
-        self.d  = p1-p0
 
 class State:
     def __init__(self, x=0, y=0, z=0, fi=0, theta=0, psi=0):
