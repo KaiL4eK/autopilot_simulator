@@ -48,11 +48,14 @@ class Robot(SimObject):
         self.wz     = 0     # degree / sec
 
     def sample_step(self, dt=0):
-        new_x = self.x + self.ux * dt * m.cos(m.radians(self.theta)) \
-                       - self.uy * dt * m.sin(m.radians(self.theta))
+        self.t_cos = m.cos(m.radians(self.theta))
+        self.t_sin = m.sin(m.radians(self.theta))
 
-        new_y = self.y + self.uy * dt * m.cos(m.radians(self.theta)) \
-                       + self.ux * dt * m.sin(m.radians(self.theta))
+        new_x = self.x + self.ux * dt * self.t_cos \
+                       - self.uy * dt * self.t_sin
+
+        new_y = self.y + self.uy * dt * self.t_cos \
+                       + self.ux * dt * self.t_sin
 
         new_t = self.theta + self.wz * dt
 
@@ -67,12 +70,6 @@ class Robot(SimObject):
     def proccess_sonar_sensors(self, obstacles_lines):
         for sonar in self.sensors:
             sonar.update(obstacles_lines)
-
-class State:
-    def __init__(self, x, y, theta):
-        self.x = x
-        self.y = y
-        self.theta = theta
 
 class SimManager:
     def __init__ (self, map_data, dt=0, bot=None, target=None):
@@ -152,6 +149,8 @@ class SimManager:
         cv2.waitKey(30)
 
     def sample_step (self, inputs):
+        step_start = time.time()
+
         inputs = np.clip(inputs, -1, 1)
 
         # if max(inputs) > 1:
@@ -169,7 +168,11 @@ class SimManager:
         if not self.bot.sample_step(self.dt):
             print('Collision')
 
+        sensors_start = time.time()
+
         self.bot.proccess_sonar_sensors(self.map_data.get_obstacle_lines())
+
+        sensors_end = time.time()
 
         # if self.check_collision():
             # return False
@@ -178,6 +181,12 @@ class SimManager:
         self.target_dir = self.bot.get_base_vectors_to(self.target)
 
         self.path.append((self.t, self.bot.x, self.bot.y))
+
+        step_end = time.time()
+        print("Bot calc time:", (sensors_start - step_start) * 1000, "ms")
+        print("Sensors time:", (sensors_end - sensors_start) * 1000, "ms")
+        print("Other time:", (step_end - sensors_end) * 1000, "ms")
+        print("Step time:", (step_end - step_start) * 1000, "ms")
 
         return True
 
@@ -236,12 +245,8 @@ if __name__ == '__main__':
 
         inputs = sim.process_input()
 
-        step_start = time.time()
         if not sim.sample_step(inputs):
             exit(1)
-
-        step_end = time.time()
-        print("Step time:", (step_end - step_start) * 1000, "ms")
 
         sim.show_map(resolution_m_px=0.02)
             

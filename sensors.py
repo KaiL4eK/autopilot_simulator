@@ -42,7 +42,7 @@ class SonarSensor:
         self.base_y     = 0
         self.base_theta = 0
 
-        for i in range(int(-angle/2), int((angle/2)+1) ):
+        for i in range(int(-angle/2), int((angle/2)+1), 2 ):
             self.rays.append(SonarRay(i, self.dist_max))
 
     def update_base_point (self, x=0, y=0, theta=0):
