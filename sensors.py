@@ -26,7 +26,7 @@ class SonarRay:
         return self.range
 
 class SonarSensor:
-    def __init__ (self, base_dist=0, stheta=0, angle=40, distance_max=4.5, distance_min=0.02):
+    def __init__ (self, base_dist=0, stheta=0, angle=40, distance_max=4.5, distance_min=0.2):
         
         self.base_dist = base_dist
         self.stheta = stheta

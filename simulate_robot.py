@@ -28,7 +28,7 @@ class Robot(SimObject):
         self.r      = 0.56
         self.reset_speed()
 
-        sensors_shift = 0.15
+        sensors_shift = 0.2
         self.sensors = [SonarSensor(base_dist=sensors_shift, stheta=0),  # Front
                         SonarSensor(base_dist=sensors_shift, stheta=-90),  # Right
                         SonarSensor(base_dist=sensors_shift, stheta=90),  # Left
@@ -71,6 +71,7 @@ class Robot(SimObject):
 
         for sonar in self.sensors:
             sonar.update_base_point(x=self.x, y=self.y, theta=self.theta)
+
         # print(self.x, self.y, self.theta)
 
     def proccess_sonar_sensors(self, obstacles_lines):
@@ -85,6 +86,7 @@ class SimManager:
         self.dt = dt
         self.t = 0
         self.prev_control_upd_t = 0
+        self.prev_sensors_upd_t = 0
         self.path = []
         self.map_data = map_data
 
@@ -106,7 +108,6 @@ class SimManager:
 
             dir_line = Line()
             dir_line.from_ray(ray=Ray(p0=Point(self.bot.x, self.bot.y), theta=self.bot.theta))
-            print("Bot position:", (self.bot.x, self.bot.y, self.bot.theta))
             # print("Line segment #1 runs from", dir_line.p0, "to", dir_line.p1)
 
             cv2.line(img,   pt1=(int(dir_line.p0.x / resolution_m_px), int(dir_line.p0.y / resolution_m_px)),
@@ -165,23 +166,25 @@ class SimManager:
 
         self.t += self.dt
 
-        # if self.t - self.prev_control_upd_t >= 5/1000:
-        self.bot.ux = inputs[0] * 100
-        self.bot.uy = inputs[1] * 100
-        self.bot.wz = inputs[2] * 1000
-            # self.prev_control_upd_t = self.t
+        if self.t - self.prev_control_upd_t >= 5/1000:
+            self.bot.ux = inputs[0] * 10
+            self.bot.uy = inputs[1] * 10
+            self.bot.wz = inputs[2] * 10
+            self.prev_control_upd_t = self.t
 
-        if not self.bot.sample_step(self.dt):
-            print('Collision')
+        self.bot.sample_step(self.dt)
+            # print('Collision')
 
         sensors_start = time.time()
 
-        self.bot.proccess_sonar_sensors(self.map_data.get_obstacle_lines())
+        if self.t - self.prev_sensors_upd_t >= 25/1000:
+            self.bot.proccess_sonar_sensors(self.map_data.get_obstacle_lines())
+            self.prev_sensors_upd_t = self.t
 
         sensors_end = time.time()
 
-        # if self.check_collision():
-            # return False
+        if check_collision(self.map_data, self.bot, self.bot.get_state()):
+            return False
 
         self.target_dist = self.bot.get_distance_to(self.target)
         self.target_dir = self.bot.get_base_vectors_to(self.target)
@@ -189,10 +192,12 @@ class SimManager:
         self.path.append((self.t, self.bot.x, self.bot.y))
 
         step_end = time.time()
-        print("Bot calc time:", (sensors_start - step_start) * 1000, "ms")
-        print("Sensors time:", (sensors_end - sensors_start) * 1000, "ms")
-        print("Other time:", (step_end - sensors_end) * 1000, "ms")
-        print("Step time:", (step_end - step_start) * 1000, "ms")
+        # print(sim.get_state())
+        # print("Bot position:", (self.bot.x, self.bot.y, self.bot.theta))
+        # print("Bot calc time:", (sensors_start - step_start) * 1000, "ms")
+        # print("Sensors time:", (sensors_end - sensors_start) * 1000, "ms")
+        # print("Other time:", (step_end - sensors_end) * 1000, "ms")
+        # print("Step time:", (step_end - step_start) * 1000, "ms")
 
         return True
 
@@ -206,7 +211,7 @@ class SimManager:
         return self.target_dist
 
     def get_state (self):
-        return [self.target_dir, self.bot.get_sensors_values()]
+        return np.array(self.target_dir + self.bot.get_sensors_values(), dtype=np.float32)
 
     def process_input (self):
         key = cv2.waitKey(0) & 0xFF
@@ -255,5 +260,4 @@ if __name__ == '__main__':
             exit(1)
 
         sim.show_map(resolution_m_px=0.02)
-        print(sim.get_state())
             

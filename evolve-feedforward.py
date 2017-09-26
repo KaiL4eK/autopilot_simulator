@@ -16,20 +16,19 @@ import visualize
 from simulate_robot import *
 
 simulation_seconds = 10.0
+map_filename = 'two_obstacles.pmap'
 
-map_shape = (15, 8)                # meters
-initial_state = (2, map_shape[1] / 2)   # x, y
-resol = 0.01
+resol = 0.02
 dt = 1/1000 # 200 Hz
 
 # Use the NN network phenotype and the discrete actuator force function.
-def eval_genome(genome, config, img):
+def eval_genome(genome, config, img, sim_map):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
 
-    sim1 = SimManager(dt=dt,
-                        bot=Robot(x=1, y=2, theta=0),
-                        target=CircleTarget(x=13, y=7),
-                        obstacles=[], map_size_m=map_shape)
+    sim = SimManager(dt=dt, # 200 Hz
+                        bot=Robot(x=2, y=8, theta=0),
+                        target=CircleTarget(x=18, y=5),
+                        map_data=sim_map)
 
     # sim2 = SimManager(dt=dt,
     #                     bot=Robot(x=2, y=6, theta=0),
@@ -41,42 +40,44 @@ def eval_genome(genome, config, img):
     #                     target=CircleTarget(x=13, y=7),
     #                     obstacles=[], map_size_m=map_shape)
 
-    sims = [sim1]
-    fitnesses = [0, 0, 0]
+    # sims = [sim1]
+    # fitnesses = [0, 0, 0]
 
-    for i, sim in enumerate(sims):
-        while sim.t < simulation_seconds:
+    # for i, sim in enumerate(sims):
+    while sim.t < simulation_seconds:
 
-            inputs = sim.get_state()
-            # print(inputs)
+        inputs = sim.get_state()
+        # print(inputs)
 
-            action = net.activate(inputs)
+        action = net.activate(inputs)
 
-            # print(action)
-            
-            if not sim.sample_step(action):
-                break
+        # print(action)
+        
+        if not sim.sample_step(action):
+            break
 
-        for point in sim.path:
-            time_rate = point[0] / simulation_seconds
-            cv2.circle(img, center=(int(point[1] / resol), int(point[2] / resol)), 
-                            radius=1, thickness=-1, 
-                            color=(255 - (255 * time_rate), 0, (255 * time_rate)))
+    for point in sim.path:
+        time_rate = point[0] / simulation_seconds
+        cv2.circle(img, center=(int(point[1] / resol), int(point[2] / resol)), 
+                        radius=1, thickness=-1, 
+                        color=(255 - (255 * time_rate), 0, (255 * time_rate)))
 
-        fitnesses[i] = -sim.get_fitness()
+        # fitnesses[i] = 
 
-    return min(fitnesses)
+    return -sim.get_fitness()
 
 
 def eval_genomes(genomes, config):
 
-    img = np.ones(shape=(int(map_shape[1] / resol), int(map_shape[0] / resol), 3), dtype=np.uint8) * 255
+    sim_map = get_map_from_file(map_filename)
+
+    img = sim_map.get_image(resol)
 
     for genome_id, genome in genomes:
-        genome.fitness = eval_genome(genome, config, img)
+        genome.fitness = eval_genome(genome, config, img, sim_map)
 
-    cv2.imshow('1', img)
-    cv2.waitKey(1)
+    cv2.imshow('1', cv2.flip(img, 0))
+    cv2.waitKey(30)
 
 
 def run():
