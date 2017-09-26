@@ -32,6 +32,12 @@ class Line:
 
     def intersect_line( self, other_line ):
 
+        if min([self.p0.x, self.p1.x]) > max([other_line.p0.x, other_line.p1.x]) or \
+           max([self.p0.x, self.p1.x]) < min([other_line.p0.x, other_line.p1.x]) or \
+           min([self.p0.y, self.p1.y]) > max([other_line.p0.y, other_line.p1.y]) or \
+           max([self.p0.y, self.p1.y]) < min([other_line.p0.y, other_line.p1.y]):
+           return -1;
+
         DET = (-self.d.x * other_line.d.y + self.d.y * other_line.d.x)
 
         if m.fabs(DET) < DET_TOLERANCE: 

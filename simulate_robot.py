@@ -39,6 +39,33 @@ class SimObject(object):
         return (dx / dist, dy / dist)
 
 
+class Map:
+    def __init__(self, width=0, height=0):
+        self.width = width
+        self.height = height
+
+        self.ul = Point(0, height)
+        self.lr = Point(width, 0)
+
+        self.ur = Point(width, height)
+        self.ll = Point(0, 0)
+
+        self.map_lines = [Line(self.ul, self.ur), 
+                          Line(self.ur, self.lr),
+                          Line(self.lr, self.ll),
+                          Line(self.ll, self.ul)]
+
+        self.obstacles = [RectObstacle(x=5, y=7, width=1, height=3)]
+
+    def get_obstacle_lines(self):
+        obstacle_lines = []
+        for obstacle in self.obstacles:
+            obstacle_lines.extend(obstacle.lines)
+
+        obstacle_lines.extend(self.map_lines)
+
+        return obstacle_lines
+
 
 class State:
     def __init__(self, x=0, y=0, z=0, fi=0, theta=0, psi=0):
@@ -70,11 +97,14 @@ class RectObstacle(SimObject):
         self.w = width
         self.h = height
 
-        self.ul = Point(x - width/2, y - height/2)
-        self.lr = Point(x + width/2, y + height/2)
+        self.ul = Point(x - width/2, y + height/2)
+        self.lr = Point(x + width/2, y - height/2)
 
-        self.ur = Point(x + width/2, y - height/2)
-        self.ll = Point(x - width/2, y + height/2)
+        self.ur = Point(x + width/2, y + height/2)
+        self.ll = Point(x - width/2, y - height/2)
+
+        # print(self.x, self.y)
+        # print(self.ul, self.lr)
 
         self.lines = [Line(self.ul, self.ur), 
                       Line(self.ur, self.lr),
@@ -127,29 +157,29 @@ class Robot(SimObject):
             sonar.update(obstacles_lines)
 
 class SimManager:
-    def __init__ (self, dt=0, bot=None, target=None, obstacles=None, map_size_m=(0, 0)):
+    def __init__ (self, map_data, dt=0, bot=None, target=None):
         self.bot = bot
         self.target = target
-        self.obstacles = obstacles
+        # self.obstacles = map_data.obstacles
         self.dt = dt
         self.t = 0
         self.prev_control_upd_t = 0
         self.path = []
-        self.map_size = map_size_m
+        self.map_data = map_data
 
         self.target_dist = self.bot.get_distance_to(self.target)
         self.target_dir = self.bot.get_base_vectors_to(self.target)
 
     def show_map (self, resolution_m_px=1):
-        width = self.map_size[0] / float(resolution_m_px)
-        height = self.map_size[1] / float(resolution_m_px)
+        width  = self.map_data.width  / float(resolution_m_px)
+        height = self.map_data.height / float(resolution_m_px)
 
         # print('Draw map: %d / %d' % (width, height))
 
         img = np.ones(shape=(int(height), int(width), 3), dtype=np.uint8) * 255
 
-        if self.obstacles:
-            for obstacle in self.obstacles:
+        if self.map_data.obstacles:
+            for obstacle in self.map_data.obstacles:
                 if type(obstacle) is RectObstacle:
                     cv2.rectangle(img, (int(obstacle.ul.x / resolution_m_px), int(obstacle.ul.y / resolution_m_px)), 
                                        (int(obstacle.lr.x / resolution_m_px), int(obstacle.lr.y / resolution_m_px)), 
@@ -168,7 +198,7 @@ class SimManager:
             dir_line = Line()
             dir_line.from_ray(ray=Ray(p0=Point(self.bot.x, self.bot.y), theta=self.bot.theta))
             print("Bot position:", (self.bot.x, self.bot.y, self.bot.theta))
-            print("Line segment #1 runs from", dir_line.p0, "to", dir_line.p1)
+            # print("Line segment #1 runs from", dir_line.p0, "to", dir_line.p1)
 
             cv2.line(img,   pt1=(int(dir_line.p0.x / resolution_m_px), int(dir_line.p0.y / resolution_m_px)),
                             pt2=(int(dir_line.p1.x / resolution_m_px), int(dir_line.p1.y / resolution_m_px)),
@@ -212,8 +242,6 @@ class SimManager:
             cv2.circle(img, center=(int(point[1] / resolution_m_px), int(point[2] / resolution_m_px)), 
                             radius=1, thickness=-1, color=(0, 0, 255 * point[0] / self.t))
 
-
-
         cv2.imshow('2', cv2.flip(img, 0))
         cv2.waitKey(30)
 
@@ -226,7 +254,6 @@ class SimManager:
 
         self.t += self.dt
 
-
         # if self.t - self.prev_control_upd_t >= 5/1000:
         self.bot.ux = inputs[0] * 100
         self.bot.uy = inputs[1] * 100
@@ -234,7 +261,7 @@ class SimManager:
             # self.prev_control_upd_t = self.t
 
         self.bot.sample_step(self.dt)
-        self.bot.proccess_sonar_sensors(self.obstacles[0].lines)
+        self.bot.proccess_sonar_sensors(self.map_data.get_obstacle_lines())
 
         # if self.check_collision():
             # return False
@@ -255,15 +282,17 @@ class SimManager:
     def check_collision (self):
         if  self.bot.x - self.bot.r <= 0 or \
             self.bot.y - self.bot.r <= 0 or \
-            self.bot.x + self.bot.r >= self.map_size[0] or \
-            self.bot.y + self.bot.r >= self.map_size[1]:
+            self.bot.x + self.bot.r >= self.map_data.width or \
+            self.bot.y + self.bot.r >= self.map_data.height:
             return True
 
-        for obstacle in self.obstacles:
+        for obstacle in self.map_data.obstacles:
             if type(obstacle) is RectObstacle:
                 # https://stackoverflow.com/a/1879223
                 nearest_x = np.clip(self.bot.x, obstacle.ul.x, obstacle.lr.x)
-                nearest_y = np.clip(self.bot.y, obstacle.ul.y, obstacle.lr.y)
+                nearest_y = np.clip(self.bot.y, obstacle.lr.y, obstacle.ul.y)
+
+                # print(nearest_x, nearest_y)
 
                 dist_x = self.bot.x - nearest_x
                 dist_y = self.bot.y - nearest_y
@@ -391,11 +420,10 @@ if __name__ == '__main__':
     sim = SimManager(dt=0.001, # 200 Hz
                         bot=Robot(x=2, y=5, theta=0),
                         target=CircleTarget(x=18, y=5),
-                        obstacles=[RectObstacle(x=5, y=7, width=1, height=3)], map_size_m=(20, 10))
+                        map_data=Map(width=20, height=10))
 
     while True:
 
-        
         inputs = sim.process_input()
 
         if not sim.sample_step(inputs):
