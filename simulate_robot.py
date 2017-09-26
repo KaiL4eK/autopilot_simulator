@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import time
 import cv2
 import numpy as np
 import math as m
@@ -55,7 +56,8 @@ class Map:
                           Line(self.lr, self.ll),
                           Line(self.ll, self.ul)]
 
-        self.obstacles = [RectObstacle(x=5, y=7, width=1, height=3)]
+        self.obstacles = [RectObstacle(ul=Point(6, 10), width=2, height=5),
+                          RectObstacle(ul=Point(13, 5), width=2, height=5)]
 
     def get_obstacle_lines(self):
         obstacle_lines = []
@@ -91,8 +93,11 @@ class CircleObstacle(SimObject):
         self.r = radius
 
 class RectObstacle(SimObject):
-    def __init__ (self, x=0, y=0, width=0, height=0):
+    def __init__ (self, ul=Point(0, 0), width=0, height=0):
         # super(self.__class__, self).__init__(x, y, 0)
+        x = ul.x + width/2
+        y = ul.y - height/2
+
         super().__init__(x, y, 0)
         self.w = width
         self.h = height
@@ -155,6 +160,81 @@ class Robot(SimObject):
     def proccess_sonar_sensors(self, obstacles_lines):
         for sonar in self.sensors:
             sonar.update(obstacles_lines)
+
+class SonarRay:
+    def __init__(self, theta=0, max_range=1):
+        self.theta      = theta
+        self.max_range  = max_range
+        self.range      = max_range
+
+        self.line       = Line()
+        self.ray        = Ray()
+
+    def update_base(self, x=0, y=0, theta=0):
+        self.ray.p0     = Point(x, y)
+        self.ray.theta  = theta + self.theta
+        self.line.from_ray(ray=self.ray, length=self.range)
+
+    def update(self, lines):
+        self.line.from_ray(ray=self.ray, length=self.max_range)
+        self.range  = self.max_range
+        for line in lines:
+            r = self.line.intersect_line(line)
+            if r > 0:
+                self.range = min([r * self.max_range, self.range])
+
+        self.line.from_ray(ray=self.ray, length=self.range)
+        return self.range
+
+class SonarSensor:
+    def __init__ (self, base_dist=0, stheta=0, angle=40, distance_max=4.5, distance_min=0.02):
+        
+        self.base_dist = base_dist
+        self.stheta = stheta
+
+        self.angle    = angle
+        self.dist_max = distance_max
+        self.dist_min = distance_min
+
+        self.rays     = []
+        self.range    = 4.5
+
+        self.base_x     = 0
+        self.base_y     = 0
+        self.base_theta = 0
+
+        for i in range(int(-angle/2), int((angle/2)+1) ):
+            self.rays.append(SonarRay(i, self.dist_max))
+
+    def update_base_point (self, x=0, y=0, theta=0):
+        self.base_theta = self.stheta + theta
+        self.base_x = x + self.base_dist * m.cos(m.radians(self.base_theta))
+        self.base_y = y + self.base_dist * m.sin(m.radians(self.base_theta))
+
+        for ray in self.rays:
+            ray.update_base(self.base_x, self.base_y, self.base_theta)
+
+        # print(self.base_theta, self.base_x, self.base_y)
+
+    def get_base_point (self):
+        return (self.base_x, self.base_y)
+
+    def get_range (self):
+        return self.range
+
+    def get_left_right_angles (self, theta=0):
+        return (theta + self.stheta + self.angle/2, 
+                theta + self.stheta - self.angle/2)
+
+    def update(self, lines):
+        self.range = self.dist_max
+        for ray in self.rays:
+            ray_range_m = ray.update(lines)
+
+            self.range = min([ray_range_m, self.range])
+
+        self.range = max([self.range, self.dist_min])
+
 
 class SimManager:
     def __init__ (self, map_data, dt=0, bot=None, target=None):
@@ -341,84 +421,10 @@ class SimManager:
         else:
             return (0, 0, 0)
 
-class SonarRay:
-    def __init__(self, theta=0, max_range=1):
-        self.theta      = theta
-        self.max_range  = max_range
-        self.range      = max_range
-
-        self.line       = Line()
-        self.ray        = Ray()
-
-    def update_base(self, x=0, y=0, theta=0):
-        self.ray.p0     = Point(x, y)
-        self.ray.theta  = theta + self.theta
-        self.line.from_ray(ray=self.ray, length=self.range)
-
-    def update(self, lines):
-        self.line.from_ray(ray=self.ray, length=self.max_range)
-        self.range  = self.max_range
-        for line in lines:
-            r = self.line.intersect_line(line)
-            if r > 0:
-                self.range = min([r * self.max_range, self.range])
-
-        self.line.from_ray(ray=self.ray, length=self.range)
-        return self.range
-
-class SonarSensor:
-    def __init__ (self, base_dist=0, stheta=0, angle=40, distance_max=4.5, distance_min=0.02):
-        
-        self.base_dist = base_dist
-        self.stheta = stheta
-
-        self.angle    = angle
-        self.dist_max = distance_max
-        self.dist_min = distance_min
-
-        self.rays     = []
-        self.range    = 4.5
-
-        self.base_x     = 0
-        self.base_y     = 0
-        self.base_theta = 0
-
-        for i in range(int(-angle/2), int((angle/2)+1) ):
-            self.rays.append(SonarRay(i, self.dist_max))
-
-    def update_base_point (self, x=0, y=0, theta=0):
-        self.base_theta = self.stheta + theta
-        self.base_x = x + self.base_dist * m.cos(m.radians(self.base_theta))
-        self.base_y = y + self.base_dist * m.sin(m.radians(self.base_theta))
-
-        for ray in self.rays:
-            ray.update_base(self.base_x, self.base_y, self.base_theta)
-
-        # print(self.base_theta, self.base_x, self.base_y)
-
-    def get_base_point (self):
-        return (self.base_x, self.base_y)
-
-    def get_range (self):
-        return self.range
-
-    def get_left_right_angles (self, theta=0):
-        return (theta + self.stheta + self.angle/2, 
-                theta + self.stheta - self.angle/2)
-
-    def update(self, lines):
-        self.range = self.dist_max
-        for ray in self.rays:
-            ray_range_m = ray.update(lines)
-
-            self.range = min([ray_range_m, self.range])
-
-        self.range = max([self.range, self.dist_min])
-
 
 if __name__ == '__main__':
     sim = SimManager(dt=0.001, # 200 Hz
-                        bot=Robot(x=2, y=5, theta=0),
+                        bot=Robot(x=2, y=8, theta=0),
                         target=CircleTarget(x=18, y=5),
                         map_data=Map(width=20, height=10))
 
@@ -426,9 +432,12 @@ if __name__ == '__main__':
 
         inputs = sim.process_input()
 
-        time.time()
+        step_start = time.time()
         if not sim.sample_step(inputs):
             exit(1)
+
+        step_end = time.time()
+        print("Step time:", (step_end - step_start) * 1000, "ms")
 
         sim.show_map(resolution_m_px=0.02)
             
