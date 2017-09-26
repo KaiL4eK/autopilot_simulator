@@ -426,6 +426,7 @@ if __name__ == '__main__':
 
         inputs = sim.process_input()
 
+        time.time()
         if not sim.sample_step(inputs):
             exit(1)
 
