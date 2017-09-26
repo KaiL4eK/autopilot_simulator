@@ -42,6 +42,12 @@ class Robot(SimObject):
     def get_state(self):
         return State(self.x, self.y, self.theta)
 
+    def get_sensors_values(self):
+        return (self.sensors[0].range,
+                self.sensors[1].range,
+                self.sensors[2].range,
+                self.sensors[3].range)
+
     def reset_speed (self):
         self.ux     = 0     # m / sec
         self.uy     = 0     # m / sec
@@ -200,7 +206,7 @@ class SimManager:
         return self.target_dist
 
     def get_state (self):
-        return self.target_dir
+        return [self.target_dir, self.bot.get_sensors_values()]
 
     def process_input (self):
         key = cv2.waitKey(0) & 0xFF
@@ -249,4 +255,5 @@ if __name__ == '__main__':
             exit(1)
 
         sim.show_map(resolution_m_px=0.02)
+        print(sim.get_state())
             
