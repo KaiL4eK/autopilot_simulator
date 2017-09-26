@@ -194,10 +194,10 @@ class SimManager:
         step_end = time.time()
         # print(sim.get_state())
         # print("Bot position:", (self.bot.x, self.bot.y, self.bot.theta))
-        # print("Bot calc time:", (sensors_start - step_start) * 1000, "ms")
-        # print("Sensors time:", (sensors_end - sensors_start) * 1000, "ms")
-        # print("Other time:", (step_end - sensors_end) * 1000, "ms")
-        # print("Step time:", (step_end - step_start) * 1000, "ms")
+        print("Bot calc time:", (sensors_start - step_start) * 1000, "ms")
+        print("Sensors time:", (sensors_end - sensors_start) * 1000, "ms")
+        print("Other time:", (step_end - sensors_end) * 1000, "ms")
+        print("Step time:", (step_end - step_start) * 1000, "ms")
 
         return True
 
