@@ -3,21 +3,27 @@ import math as m
 DET_TOLERANCE = 0.00000001
 
 class State:
-    def __init__(self, x=0, y=0, z=0, fi=0, theta=0, psi=0):
-        self.x      = x
-        self.y      = y
-        self.z      = z
-        self.fi     = fi
-        self.theta  = theta
-        self.psi    = psi
+    def __init__(self, x, y, theta):
+        self.x = x
+        self.y = y
+        self.theta = theta
+
+# class State:
+    # def __init__(self, x=0, y=0, z=0, fi=0, theta=0, psi=0):
+        # self.x      = x
+        # self.y      = y
+        # self.z      = z
+        # self.fi     = fi
+        # self.theta  = theta
+        # self.psi    = psi
 
 
-class Physics:
-    def __init__(self):
-        pass
+# class Physics:
+    # def __init__(self):
+        # pass
 
-    def update_state(self):
-        pass
+    # def update_state(self):
+        # pass
 
 
 class SimObject(object):
