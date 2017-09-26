@@ -50,7 +50,7 @@ class SimObject(object):
 
         dist = m.hypot(dx, dy)
 
-        return (dx / dist, dy / dist)
+        return (dx, dy) / dist
 
 class Point:
     def __init__(self, x=0, y=0):
