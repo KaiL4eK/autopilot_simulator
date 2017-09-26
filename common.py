@@ -2,6 +2,50 @@ import math as m
 
 DET_TOLERANCE = 0.00000001
 
+class State:
+    def __init__(self, x=0, y=0, z=0, fi=0, theta=0, psi=0):
+        self.x      = x
+        self.y      = y
+        self.z      = z
+        self.fi     = fi
+        self.theta  = theta
+        self.psi    = psi
+
+
+class Physics:
+    def __init__(self):
+        pass
+
+    def update_state(self):
+        pass
+
+
+class SimObject(object):
+    def __init__ (self, x=0, y=0, theta=0):
+        self.x      = x
+        self.y      = y
+        self.theta  = theta
+
+    def get_distance_to (self, dist_object=None):
+        if dist_object is None:
+            return 0
+
+        dx = dist_object.x - self.x
+        dy = dist_object.y - self.y
+
+        return m.hypot(dx, dy)
+
+    def get_base_vectors_to (self, dist_object=None):
+        if dist_object is None:
+            return (0, 0)
+
+        dx = dist_object.x - self.x
+        dy = dist_object.y - self.y
+
+        dist = m.hypot(dx, dy)
+
+        return (dx / dist, dy / dist)
+
 class Point:
     def __init__(self, x=0, y=0):
         self.x = x

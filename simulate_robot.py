@@ -5,116 +5,13 @@ import cv2
 import numpy as np
 import math as m
 from common import *
+from sim_map import *
 
 #   Axis of map:
 #   |y
 #   |
 #   |
 #   ------x
-
-
-class SimObject(object):
-    def __init__ (self, x=0, y=0, theta=0):
-        self.x      = x
-        self.y      = y
-        self.theta  = theta
-
-    def get_distance_to (self, dist_object=None):
-        if dist_object is None:
-            return 0
-
-        dx = dist_object.x - self.x
-        dy = dist_object.y - self.y
-
-        return m.hypot(dx, dy)
-
-    def get_base_vectors_to (self, dist_object=None):
-        if dist_object is None:
-            return (0, 0)
-
-        dx = dist_object.x - self.x
-        dy = dist_object.y - self.y
-
-        dist = m.hypot(dx, dy)
-
-        return (dx / dist, dy / dist)
-
-
-class Map:
-    def __init__(self, width=0, height=0):
-        self.width = width
-        self.height = height
-
-        self.ul = Point(0, height)
-        self.lr = Point(width, 0)
-
-        self.ur = Point(width, height)
-        self.ll = Point(0, 0)
-
-        self.map_lines = [Line(self.ul, self.ur), 
-                          Line(self.ur, self.lr),
-                          Line(self.lr, self.ll),
-                          Line(self.ll, self.ul)]
-
-        self.obstacles = [RectObstacle(ul=Point(6, 10), width=2, height=5),
-                          RectObstacle(ul=Point(13, 5), width=2, height=5)]
-
-    def get_obstacle_lines(self):
-        obstacle_lines = []
-        for obstacle in self.obstacles:
-            obstacle_lines.extend(obstacle.lines)
-
-        obstacle_lines.extend(self.map_lines)
-
-        return obstacle_lines
-
-
-class State:
-    def __init__(self, x=0, y=0, z=0, fi=0, theta=0, psi=0):
-        self.x      = x
-        self.y      = y
-        self.z      = z
-        self.fi     = fi
-        self.theta  = theta
-        self.psi    = psi
-
-
-class Physics:
-    def __init__(self):
-        pass
-
-    def update_state(self):
-        pass
-
-class CircleObstacle(SimObject):
-    def __init__ (self, x=0, y=0, radius=0):
-        # super(self.__class__, self).__init__(x, y, 0)
-        super().__init__(x, y, 0)
-        self.r = radius
-
-class RectObstacle(SimObject):
-    def __init__ (self, ul=Point(0, 0), width=0, height=0):
-        # super(self.__class__, self).__init__(x, y, 0)
-        x = ul.x + width/2
-        y = ul.y - height/2
-
-        super().__init__(x, y, 0)
-        self.w = width
-        self.h = height
-
-        self.ul = Point(x - width/2, y + height/2)
-        self.lr = Point(x + width/2, y - height/2)
-
-        self.ur = Point(x + width/2, y + height/2)
-        self.ll = Point(x - width/2, y - height/2)
-
-        # print(self.x, self.y)
-        # print(self.ul, self.lr)
-
-        self.lines = [Line(self.ul, self.ur), 
-                      Line(self.ur, self.lr),
-                      Line(self.lr, self.ll),
-                      Line(self.ll, self.ul)]
 
 
 class CircleTarget(SimObject):
@@ -251,19 +148,7 @@ class SimManager:
         self.target_dir = self.bot.get_base_vectors_to(self.target)
 
     def show_map (self, resolution_m_px=1):
-        width  = self.map_data.width  / float(resolution_m_px)
-        height = self.map_data.height / float(resolution_m_px)
-
-        # print('Draw map: %d / %d' % (width, height))
-
-        img = np.ones(shape=(int(height), int(width), 3), dtype=np.uint8) * 255
-
-        if self.map_data.obstacles:
-            for obstacle in self.map_data.obstacles:
-                if type(obstacle) is RectObstacle:
-                    cv2.rectangle(img, (int(obstacle.ul.x / resolution_m_px), int(obstacle.ul.y / resolution_m_px)), 
-                                       (int(obstacle.lr.x / resolution_m_px), int(obstacle.lr.y / resolution_m_px)), 
-                                  color=(0, 0, 255), thickness=-1)
+        img = self.map_data.get_image(resolution_m_px)
 
         if self.bot:
             if self.check_collision():
@@ -423,10 +308,11 @@ class SimManager:
 
 
 if __name__ == '__main__':
+    filename = 'two_obstacles.pmap'
     sim = SimManager(dt=0.001, # 200 Hz
                         bot=Robot(x=2, y=8, theta=0),
                         target=CircleTarget(x=18, y=5),
-                        map_data=Map(width=20, height=10))
+                        map_data=get_map_from_file(filename))
 
     while True:
 
