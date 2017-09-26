@@ -6,6 +6,31 @@ from common import *
 import numpy as np
 import cv2
 
+def check_collision (map_data, bot, bot_state):
+    if  bot_state.x - bot.r <= 0 or \
+        bot_state.y - bot.r <= 0 or \
+        bot_state.x + bot.r >= map_data.width or \
+        bot_state.y + bot.r >= map_data.height:
+        return True
+
+    for obstacle in map_data.obstacles:
+        if type(obstacle) is RectObstacle:
+            # https://stackoverflow.com/a/1879223
+            nearest_x = np.clip(bot_state.x, obstacle.ul.x, obstacle.lr.x)
+            nearest_y = np.clip(bot_state.y, obstacle.lr.y, obstacle.ul.y)
+
+            # print(nearest_x, nearest_y)
+
+            dist_x = bot_state.x - nearest_x
+            dist_y = bot_state.y - nearest_y
+
+            dist_sq = dist_x**2 + dist_y**2
+
+            if dist_sq < bot.r**2:
+                return True
+
+    return False
+
 class SimMap:
     def __init__(self, size):
         self.width = size[0]
