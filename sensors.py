@@ -1,4 +1,5 @@
 from common import *
+import numba as nmb
 
 class SonarRay:
     def __init__(self, theta=0, max_range=1):

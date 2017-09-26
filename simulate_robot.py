@@ -166,20 +166,20 @@ class SimManager:
 
         self.t += self.dt
 
-        if self.t - self.prev_control_upd_t >= 5/1000:
-            self.bot.ux = inputs[0] * 10
-            self.bot.uy = inputs[1] * 10
-            self.bot.wz = inputs[2] * 10
-            self.prev_control_upd_t = self.t
+        # if self.t - self.prev_control_upd_t >= 5/1000:
+        self.bot.ux = inputs[0] * 100
+        self.bot.uy = inputs[1] * 100
+        self.bot.wz = inputs[2] * 1000
+        self.prev_control_upd_t = self.t
 
         self.bot.sample_step(self.dt)
             # print('Collision')
 
         sensors_start = time.time()
 
-        if self.t - self.prev_sensors_upd_t >= 25/1000:
-            self.bot.proccess_sonar_sensors(self.map_data.get_obstacle_lines())
-            self.prev_sensors_upd_t = self.t
+        # if self.t - self.prev_sensors_upd_t >= 25/1000:
+        self.bot.proccess_sonar_sensors(self.map_data.get_obstacle_lines())
+        self.prev_sensors_upd_t = self.t
 
         sensors_end = time.time()
 
