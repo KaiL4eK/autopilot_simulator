@@ -1,5 +1,5 @@
 import math as m
-import numba as nmb
+import numba as nb
 
 DET_TOLERANCE = 0.00000001
 
@@ -53,30 +53,28 @@ class SimObject(object):
 
         return (dx / dist, dy / dist)
 
-class Point:
+point_spec = [('x', nb.float32), 
+              ('y', nb.float32)]
+@nb.jitclass(point_spec)
+class Point(object):
     def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
 
-    def __add__(self, other):
-        return Point(self.x + other.x, self.y + other.y)
-
-    def __sub__(self, other):
-        return Point(self.x - other.x, self.y - other.y)
-
-    def get_int_tuple(self):
-        print((int(self.x), int(self.y)))
-        return 
-
     def __str__(self):
         return "(%s, %s)" % (self.x, self.y) 
 
+
+# line_spec = [('p0', nb.float32[2]), 
+             # ('p1', nb.float32[2]),
+             # ('d', nb.float32[2])]
+# @nb.jitclass(line_spec)
 class Line:
     def __init__(self, p0=Point(0, 0), p1=Point(0, 0)):
         self.p0 = p0
         self.p1 = p1
 
-        self.d  = p1-p0
+        self.d  = Point(p1.x-p0.x, p1.y-p0.y)
 
     def __str__(self):
         return "(%s, %s)" % (self.p0, self.p1) 
@@ -105,7 +103,7 @@ class Line:
     def from_ray(self, ray, length=1):
         self.p0 = ray.p0
         self.d  = Point(length * m.cos(m.radians(ray.theta)), length * m.sin(m.radians(ray.theta)))
-        self.p1 = self.p0 + self.d
+        self.p1 = Point(self.p0.x + self.d.x, self.p0.y + self.d.y)
 
 class Ray:
     def __init__(self, p0=Point(0, 0), theta=0):

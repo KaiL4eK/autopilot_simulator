@@ -120,10 +120,12 @@ class SimManager:
                 cv2.circle(img, center=(int(sonar_x / resolution_m_px), int(sonar_y / resolution_m_px)), 
                                 radius=2, thickness=-1, color=(0, 0, 0))
 
-                for ray in sonar.rays:
-                    cv2.line(img,   pt1=(int(ray.line.p0.x / resolution_m_px), int(ray.line.p0.y / resolution_m_px)),
-                                    pt2=(int(ray.line.p1.x / resolution_m_px), int(ray.line.p1.y / resolution_m_px)),
-                                    color=(0, 255 * i / len(self.bot.sensors), 0),
+                for ray_value, ray_angle in zip(sonar.ray_values, sonar.ray_angles):
+                    ray_line = line_from_radial(base=(sonar.base_x, sonar.base_y), length=ray_value, theta=sonar.base_theta + ray_angle)
+
+                    cv2.line(img,   pt1=(int(ray_line.p0.x / resolution_m_px), int(ray_line.p0.y / resolution_m_px)),
+                                    pt2=(int(ray_line.p1.x / resolution_m_px), int(ray_line.p1.y / resolution_m_px)),
+                                    color=(0, 0, 0),
                                     thickness=1 )
 
                 range = sonar.get_range()
@@ -131,7 +133,7 @@ class SimManager:
 
                 cv2.ellipse(img, center=(int(sonar_x / resolution_m_px), int(sonar_y / resolution_m_px)),
                                  axes=(int(range / resolution_m_px), int(range / resolution_m_px)), angle=0, startAngle=right_angle, endAngle=left_angle, 
-                                 color=(255, 255 * i / len(self.bot.sensors), 255), thickness=3)
+                                 color=(100, 0, 0), thickness=3)
 
 
             cv2.circle(img, center=(int(self.bot.x / resolution_m_px), int(self.bot.y / resolution_m_px)), 
@@ -194,10 +196,14 @@ class SimManager:
         step_end = time.time()
         # print(sim.get_state())
         # print("Bot position:", (self.bot.x, self.bot.y, self.bot.theta))
-        print("Bot calc time:", (sensors_start - step_start) * 1000, "ms")
-        print("Sensors time:", (sensors_end - sensors_start) * 1000, "ms")
-        print("Other time:", (step_end - sensors_end) * 1000, "ms")
-        print("Step time:", (step_end - step_start) * 1000, "ms")
+        bot_state_calc_t = (sensors_start - step_start) * 1000
+        sensors_calc_t   = (sensors_end - sensors_start) * 1000
+        other_calc_t     = (step_end - sensors_end) * 1000
+        step_calc_t      = (step_end - step_start) * 1000
+        print("Bot calc time:", bot_state_calc_t, "ms / Ratio:", bot_state_calc_t / step_calc_t * 100, "%" )
+        print("Sensors time:", sensors_calc_t, "ms / Ratio:", sensors_calc_t / step_calc_t * 100, "%")
+        print("Other time:", other_calc_t, "ms / Ratio:", other_calc_t / step_calc_t * 100, "%")
+        print("Step time:", step_calc_t, "ms")
 
         return True
 
