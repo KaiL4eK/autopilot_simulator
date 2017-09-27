@@ -2,98 +2,88 @@ from common import *
 import numba as nb
 import numpy as np
 
-# class SonarRay:
-#     def __init__(self, theta=0, max_range=1):
-#         self.theta      = theta
-#         self.max_range  = max_range
-#         self.range      = max_range
-
-#         self.line       = Line()
-#         self.ray        = Ray()
-
-#     def update_base(self, x=0, y=0, theta=0):
-#         self.ray.p0     = Point(x, y)
-#         self.ray.theta  = theta + self.theta
-#         self.line.from_ray(ray=self.ray, length=self.range)
-
-#     def update(self, lines):
-#         self.line.from_ray(ray=self.ray, length=self.max_range)
-#         self.range  = self.max_range
-#         for line in lines:
-#             r = self.line.intersect_line(line)
-#             if r > 0:
-#                 self.range = min([r * self.max_range, self.range])
-
-#         self.line.from_ray(ray=self.ray, length=self.range)
-#         return self.range
-
+# sonar_spec = [('base_dist', nb.float32), 
+#               ('stheta', nb.float32),
+#               ('angle', nb.float32),
+#               ('dist_max', nb.float32),
+#               ('dist_min', nb.float32),
+#               ('nrows', nb.int32),
+#               ('ray_angles', nb.float32[:]),
+#               ('ray_values', nb.float32[:]),
+#               ('range', nb.float32),
+#               ('base_x', nb.float32),
+#               ('base_y', nb.float32),
+#               ('base_theta', nb.float32)]
+# @nb.jitclass(sonar_spec)
 class SonarSensor(object):
-    def __init__ (self, base_dist=0, stheta=0, angle=30, distance_max=4.5, distance_min=0.02):
+    def __init__ (self, base_dist, stheta):
         
         self.base_dist = base_dist
         self.stheta = stheta
 
-        self.angle    = angle
-        self.dist_max = distance_max
-        self.dist_min = distance_min
+        self.angle    = 30
+        self.dist_max = 4.5
+        self.dist_min = 0.02
 
-        self.ray_angles = np.arange(-angle/2, (angle/2)+1, dtype=np.float32)
-        self.ray_values = np.ones_like(self.ray_angles, dtype=np.float32)
-        # self.ray_values = np.ones_like()
-        # self.rays       = []
-        self.range      = distance_max
+        self.nrows      = int(self.angle / 1 + 1)
+        self.ray_angles = np.zeros(shape=(self.nrows), dtype=np.float32)
+
+        for i in nb.prange(self.nrows):
+            self.ray_angles[i] = -self.angle / 2 + (self.angle / self.nrows * i)
+
+        self.ray_values = np.ones(shape=(self.nrows), dtype=np.float32)
+
+        self.range      = self.dist_max
 
         self.base_x     = 0
         self.base_y     = 0
         self.base_theta = 0
 
-        # for idx, angle in enumerate(range(int(-angle/2), int((angle/2)+1) )):
-            # self.ray_angles[i]
-            # self.rays.append(SonarRay(i, self.dist_max))
-
-    def update_base_point (self, x=0, y=0, theta=0):
+    def update_base_point (self, x, y, theta):
         self.base_theta = self.stheta + theta
         self.base_x = x + self.base_dist * m.cos(m.radians(self.base_theta))
         self.base_y = y + self.base_dist * m.sin(m.radians(self.base_theta))
-
-        # for ray in self.rays:
-            # ray.update_base(self.base_x, self.base_y, self.base_theta)
-
-        # print(self.base_theta, self.base_x, self.base_y)
-
-    def get_base_point (self):
-        return (self.base_x, self.base_y)
-
-    def get_range (self):
-        return self.range
 
     def get_left_right_angles (self, theta=0):
         return (theta + self.stheta + self.angle/2, 
                 theta + self.stheta - self.angle/2)
 
+    def get_state_point(self):
+        return Point(self.base_x, self.base_y)
+
     def update(self, lines):
-        # self.range = self.dist_max
-        self.ray_values.fill(1.)
-        for ray_idx, ray_angle in enumerate(self.ray_angles):
-            ray_line = line_from_radial(base=(self.base_x, self.base_y), length=self.dist_max, theta=self.base_theta + ray_angle)
-            
-            for line in lines:
-                r = ray_line.intersect_line(line)
-                if r > 0:
-                    self.ray_values[ray_idx] = min([r, self.ray_values[ray_idx]])
 
-            # ray_range_m = ray.update(lines)
+        self.range = update_sonar(self.nrows, self.ray_angles, self.ray_values, lines, self.dist_max, self.get_state_point(), self.base_theta)
 
-            # self.range = min([ray_range_m, self.range])
+        # self.ray_values = np.ones(shape=(self.nrows), dtype=np.float32)
+        # for ray_idx in nb.prange(self.nrows):
+        #     ray_line = line_from_radial(base_point=Point(self.base_x, self.base_y), 
+        #                                 length=self.dist_max, 
+        #                                 theta=self.base_theta + self.ray_angles[ray_idx])
+        #     for line in lines:
+        #         r = ray_line.intersect_line(line)
+        #         if r > 0:
+        #             self.ray_values[ray_idx] = np.array([r, self.ray_values[ray_idx]]).min()
 
-        self.ray_values = self.ray_values * self.dist_max
-        self.range = min(self.ray_values)
+        # self.ray_values = self.ray_values * self.dist_max
+        # self.range = self.ray_values.min()
 
-def line_from_radial (base, length, theta):
-    new_line = Line()
-    new_line.p0 = Point(base[0], base[1])
-    new_line.d = Point(length * m.cos(m.radians(theta)), length * m.sin(m.radians(theta)))
-    new_line.p1 = Point(new_line.p0.x + new_line.d.x, new_line.p0.y + new_line.d.y)
+def sonar_update(sonar, items):
+    sonar.range = sonar.update(items)
 
-    return new_line
+@nb.njit()
+def update_sonar(nrows, ray_angles, ray_values, lines, dist_max, base_point, base_theta):
+    ray_values = np.ones(shape=(nrows), dtype=np.float32)
+    for ray_idx in nb.prange(nrows):
+        ray_line_np = line_from_radial(base_point=base_point, 
+                                    length=dist_max, 
+                                    theta=base_theta + ray_angles[ray_idx])
+        for i in nb.prange(len(lines)):
+            r = intersect_line1(ray_line_np, lines[i])
+            if r > 0:
+                ray_values[ray_idx] = np.array([r, ray_values[ray_idx]]).min()
 
+    return ray_values.min()
+
+# sonar_type = nb.deferred_type()
+# sonar_type.define(SonarSensor.class_type.instance_type)
