@@ -1,0 +1,4 @@
+numba
+jinja2
+pygame
+pymunk

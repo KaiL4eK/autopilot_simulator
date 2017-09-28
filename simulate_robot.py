@@ -31,15 +31,6 @@ class CircleTarget(object):
     def get_state_point(self):
         return Point(self.x, self.y)
 
-# agent_spec = [('x', nb.float32), 
-#               ('y', nb.float32),
-#               ('theta', nb.float32),
-#               ('r', nb.float32),
-#               ('ux', nb.float32),
-#               ('uy', nb.float32),
-#               ('wz', nb.float32),
-#               ('sensor', sonar_type)]
-# @nb.jitclass(agent_spec)
 class Robot(object):
     def __init__ (self, x, y, theta):
 
@@ -67,6 +58,9 @@ class Robot(object):
     def get_state_point(self):
         return Point(self.x, self.y)
 
+    def get_state_tuple(self):
+        return (self.x, self.y, self.theta)
+
     def sample_step(self, dt=0):
         self.t_cos = m.cos(m.radians(self.theta))
         self.t_sin = m.sin(m.radians(self.theta))
@@ -89,7 +83,6 @@ class Robot(object):
         for sonar in self.sensors:
             sonar.update_base_point(x=self.x, y=self.y, theta=self.theta)
             sonar.update(obstacles_lines)
-
 
         # with Pool() as pool:
             # pool.starmap(sonar_update, zip(self.sensors, repeat(obstacles_lines)))
@@ -161,7 +154,8 @@ class SimManager:
                 self.bot.proccess_sonar_sensors(self.map_data.get_obstacle_lines())
                 self.prev_sensors_upd_t = self.t           
 
-        self.bot_collision = check_collision(self.map_data, self.bot.r, self.bot.get_state_point())
+        # self.bot_collision = check_collision(self.map_data, self.bot.r, self.bot.get_state_point())
+        self.bot_collision = check_collision_np(self.map_data.get_obstacle_points(), self.map_data.size, self.bot.r, self.bot.get_state_tuple())
 
         self.target_dir = get_base_vectors_to(self.bot.get_state_point(), 
                                               self.target.get_state_point())
@@ -170,7 +164,7 @@ class SimManager:
 
         if debug:
             step_end = time.time()
-            print(sim.get_state())
+            # print(sim.get_state())
             # print("Bot position:", (self.bot.x, self.bot.y, self.bot.theta))
             bot_state_calc_t = (sensors_start - step_start) * 1000
             sensors_calc_t   = (sensors_end - sensors_start) * 1000
@@ -206,12 +200,12 @@ class SimManager:
                             thickness=-1, color=bot_clr)
 
 
-            # dir_line = line_from_radial(base_point=self.bot.get_state_point(), theta=self.bot.theta)
+            dir_line = line_from_radial(base_point=self.bot.get_state_point(), theta=self.bot.theta)
 
-            # cv2.line(img,   pt1=(int(dir_line.p0.x / resolution_m_px), int(dir_line.p0.y / resolution_m_px)),
-            #                 pt2=(int(dir_line.p1.x / resolution_m_px), int(dir_line.p1.y / resolution_m_px)),
-            #                 color=(0, 255, 0),
-            #                 thickness=1 )
+            cv2.line(img,   pt1=(int(dir_line.p0.x / resolution_m_px), int(dir_line.p0.y / resolution_m_px)),
+                            pt2=(int(dir_line.p1.x / resolution_m_px), int(dir_line.p1.y / resolution_m_px)),
+                            color=(0, 255, 0),
+                            thickness=1 )
 
             for i, sonar in enumerate(self.bot.sensors):
                 sonar_x, sonar_y = sonar.base_x, sonar.base_y
@@ -220,13 +214,13 @@ class SimManager:
 
                 dist_max = 4.5
 
-                # for ray_value, ray_angle in zip(sonar.ray_values, sonar.ray_angles):
-                #     ray_line = line_from_radial(base_point=sonar.get_state_point(), length=ray_value * dist_max, theta=sonar.base_theta + ray_angle)
+                # for ray_value, ray_angle in zip(sonar.ray_values * dist_max, sonar.ray_angles):
+                    # ray_line = line_from_radial(base_point=sonar.get_state_point(), length=ray_value, theta=sonar.base_theta + ray_angle)
 
-                #     cv2.line(img,   pt1=(int(ray_line.p0.x / resolution_m_px), int(ray_line.p0.y / resolution_m_px)),
-                #                     pt2=(int(ray_line.p1.x / resolution_m_px), int(ray_line.p1.y / resolution_m_px)),
-                #                     color=(0, 0, 0),
-                #                     thickness=1 )
+                    # cv2.line(img,   pt1=(int(ray_line.p0.x / resolution_m_px), int(ray_line.p0.y / resolution_m_px)),
+                                    # pt2=(int(ray_line.p1.x / resolution_m_px), int(ray_line.p1.y / resolution_m_px)),
+                                    # color=(0, 0, 0),
+                                    # thickness=1 )
 
                 range = sonar.range * dist_max
                 left_angle, right_angle = sonar.get_left_right_angles(self.bot.theta)

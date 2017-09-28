@@ -5,6 +5,9 @@ Single-pole balancing experiment using a feed-forward neural network.
 from __future__ import print_function
 
 import os
+import sys
+sys.path.append(os.path.expanduser('~/Dev/neat-python'))
+
 import pickle
 import time
 

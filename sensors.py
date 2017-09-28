@@ -55,31 +55,16 @@ class SonarSensor(object):
 
         self.range = update_sonar(self.nrows, self.ray_angles, self.ray_values, lines, self.dist_max, self.get_state_point(), self.base_theta)
 
-        # self.ray_values = np.ones(shape=(self.nrows), dtype=np.float32)
-        # for ray_idx in nb.prange(self.nrows):
-        #     ray_line = line_from_radial(base_point=Point(self.base_x, self.base_y), 
-        #                                 length=self.dist_max, 
-        #                                 theta=self.base_theta + self.ray_angles[ray_idx])
-        #     for line in lines:
-        #         r = ray_line.intersect_line(line)
-        #         if r > 0:
-        #             self.ray_values[ray_idx] = np.array([r, self.ray_values[ray_idx]]).min()
 
-        # self.ray_values = self.ray_values * self.dist_max
-        # self.range = self.ray_values.min()
-
-def sonar_update(sonar, items):
-    sonar.range = sonar.update(items)
-
-@nb.njit()
+@nb.njit(nogil=True)
 def update_sonar(nrows, ray_angles, ray_values, lines, dist_max, base_point, base_theta):
     ray_values = np.ones(shape=(nrows), dtype=np.float32)
     for ray_idx in nb.prange(nrows):
-        ray_line_np = line_from_radial(base_point=base_point, 
-                                    length=dist_max, 
-                                    theta=base_theta + ray_angles[ray_idx])
+        ray_line_np = line_from_radial_np(base_point=base_point, 
+                                          length=dist_max, 
+                                          theta=base_theta + ray_angles[ray_idx])
         for i in nb.prange(len(lines)):
-            r = intersect_line1(ray_line_np, lines[i])
+            r = intersect_line_np(ray_line_np, lines[i])
             if r > 0:
                 ray_values[ray_idx] = np.array([r, ray_values[ray_idx]]).min()
 
