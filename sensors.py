@@ -52,13 +52,13 @@ class SonarSensor(object):
         return Point(self.base_x, self.base_y)
 
     def update(self, lines):
-
+        self.ray_values = np.ones(shape=(self.nrows), dtype=np.float32)
         self.range = update_sonar(self.nrows, self.ray_angles, self.ray_values, lines, self.dist_max, self.get_state_point(), self.base_theta)
 
 
-@nb.njit(nogil=True)
+@nb.njit
 def update_sonar(nrows, ray_angles, ray_values, lines, dist_max, base_point, base_theta):
-    ray_values = np.ones(shape=(nrows), dtype=np.float32)
+    # ray_values = np.ones(shape=(nrows), dtype=np.float32)
     for ray_idx in nb.prange(nrows):
         ray_line_np = line_from_radial_np(base_point=base_point, 
                                           length=dist_max, 

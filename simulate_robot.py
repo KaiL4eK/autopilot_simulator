@@ -214,13 +214,13 @@ class SimManager:
 
                 dist_max = 4.5
 
-                # for ray_value, ray_angle in zip(sonar.ray_values * dist_max, sonar.ray_angles):
-                    # ray_line = line_from_radial(base_point=sonar.get_state_point(), length=ray_value, theta=sonar.base_theta + ray_angle)
+                for ray_value, ray_angle in zip(sonar.ray_values * dist_max, sonar.ray_angles):
+                    ray_line = line_from_radial(base_point=sonar.get_state_point(), length=ray_value, theta=sonar.base_theta + ray_angle)
 
-                    # cv2.line(img,   pt1=(int(ray_line.p0.x / resolution_m_px), int(ray_line.p0.y / resolution_m_px)),
-                                    # pt2=(int(ray_line.p1.x / resolution_m_px), int(ray_line.p1.y / resolution_m_px)),
-                                    # color=(0, 0, 0),
-                                    # thickness=1 )
+                    cv2.line(img,   pt1=(int(ray_line.p0.x / resolution_m_px), int(ray_line.p0.y / resolution_m_px)),
+                                    pt2=(int(ray_line.p1.x / resolution_m_px), int(ray_line.p1.y / resolution_m_px)),
+                                    color=(0, 0, 0),
+                                    thickness=1 )
 
                 range = sonar.range * dist_max
                 left_angle, right_angle = sonar.get_left_right_angles(self.bot.theta)
