@@ -2,3 +2,7 @@ numba
 jinja2
 pygame
 pymunk
+cython
+gym
+#-e git+https://github.com/peter-ch/MultiNEAT.git#egg=MultiNEAT
+-e git+https://github.com/CodeReclaimers/neat-python.git#egg=neat-python
