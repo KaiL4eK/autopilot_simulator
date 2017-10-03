@@ -178,8 +178,13 @@ class SimManager:
         return True
 
     def get_fitness (self):
-        return get_distance_to(self.bot.get_state_point(), 
-                               self.target.get_state_point())
+        result = get_distance_to(self.bot.get_state_point(), 
+                                 self.target.get_state_point())
+
+        if self.bot_collision:
+            result *= 5
+
+        return result
 
     def get_state (self):
         # pass

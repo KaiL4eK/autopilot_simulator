@@ -18,7 +18,7 @@ import visualize
 
 from simulate_robot import *
 
-simulation_seconds = 10.0
+simulation_seconds = 15.0
 map_filename = 'two_obstacles.pmap'
 
 resol = 0.02
@@ -28,8 +28,8 @@ dt = 1/1000 # 200 Hz
 def eval_genome(genome, config, img, sim_map):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
 
-    sim = SimManager(dt=dt, # 200 Hz
-                        bot=Robot(x=2, y=8, theta=0),
+    sim = SimManager(dt=dt,
+                        bot=Robot(x=3, y=7.5, theta=0),
                         target=CircleTarget(x=18, y=5),
                         map_data=sim_map)
 

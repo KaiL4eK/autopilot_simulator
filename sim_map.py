@@ -16,7 +16,7 @@ def check_collision_np (obstacle_points, map_size, bot_radius, bot_point):
     if  bot_point[0] - bot_radius <= 0 or \
         bot_point[1] - bot_radius <= 0 or \
         bot_point[0] + bot_radius >= map_size[0] or \
-        bot_point[1] + bot_radius >= map_size[0]:
+        bot_point[1] + bot_radius >= map_size[1]:
         return True
 
     for i in nb.prange(obstacle_points.shape[0]):
