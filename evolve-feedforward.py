@@ -72,7 +72,7 @@ def eval_genome(genome, config, img=None):
 
         # fitnesses[i] = 
 
-    return -sim.get_fitness()
+    return 100-sim.get_fitness()
 
 
 def eval_genomes(genomes, config):
