@@ -9,3 +9,4 @@ moviepy
 #-e git+https://github.com/peter-ch/MultiNEAT.git#egg=MultiNEAT
 #-e git+https://github.com/CodeReclaimers/neat-python.git#egg=neat-python
 #-e git+https://github.com/noio/peas.git#egg=peas
+#-e git+https://github.com/thecodemaiden/MO-NEAT.git#egg=MO-NEAT
