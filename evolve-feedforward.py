@@ -24,8 +24,10 @@ map_filename = 'two_obstacles.pmap'
 resol = 0.02
 dt = 1/1000 # 200 Hz
 
+sim_map = get_map_from_file(map_filename)
+
 # Use the NN network phenotype and the discrete actuator force function.
-def eval_genome(genome, config, img, sim_map):
+def eval_genome(genome, config, img=None):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
 
     sim = SimManager(dt=dt,
@@ -61,11 +63,12 @@ def eval_genome(genome, config, img, sim_map):
             break
 
 
-    for point in sim.path:
-        time_rate = point[0] / simulation_seconds
-        cv2.circle(img, center=(int(point[1] / resol), int(point[2] / resol)), 
-                        radius=1, thickness=-1, 
-                        color=(255 - (255 * time_rate), 0, (255 * time_rate)))
+    if img:
+        for point in sim.path:
+            time_rate = point[0] / simulation_seconds
+            cv2.circle(img, center=(int(point[1] / resol), int(point[2] / resol)), 
+                            radius=1, thickness=-1, 
+                            color=(255 - (255 * time_rate), 0, (255 * time_rate)))
 
         # fitnesses[i] = 
 
@@ -74,12 +77,10 @@ def eval_genome(genome, config, img, sim_map):
 
 def eval_genomes(genomes, config):
 
-    sim_map = get_map_from_file(map_filename)
-
     img = sim_map.get_image(resol)
 
     for genome_id, genome in genomes:
-        genome.fitness = eval_genome(genome, config, img, sim_map)
+        genome.fitness = eval_genome(genome, config, img)
 
     cv2.imshow('1', cv2.flip(img, 0))
     cv2.waitKey(30)
@@ -99,9 +100,9 @@ def run():
     pop.add_reporter(stats)
     pop.add_reporter(neat.StdOutReporter(True))
 
-    # pe = neat.ParallelEvaluator(4, eval_genome)
-    # winner = pop.run(pe.evaluate)
-    winner = pop.run(eval_genomes)
+    pe = neat.ParallelEvaluator(4, eval_genome)
+    winner = pop.run(pe.evaluate)
+    # winner = pop.run(eval_genomes)
 
     # Save the winner.
     with open('winner-feedforward', 'wb') as f:

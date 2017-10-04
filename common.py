@@ -2,6 +2,16 @@ import math as m
 import numba as nb
 import numpy as np
 
+@nb.njit
+def to_radians(degree):
+    if degree > 180:
+        degree -= 360.
+
+    if degree < -180:
+        degree += 360.
+
+    return m.radians(degree)
+
 
 point_spec = [('x', nb.float32), 
               ('y', nb.float32)]

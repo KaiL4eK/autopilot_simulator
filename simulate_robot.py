@@ -46,14 +46,15 @@ class Robot(object):
         sensors_shift = 0.2
         self.sensors = [SonarSensor(base_dist=sensors_shift, stheta=0),     # Front
                         SonarSensor(base_dist=sensors_shift, stheta=90),    # Left
-                        SonarSensor(base_dist=sensors_shift, stheta=180),   # Rear
+                        # SonarSensor(base_dist=sensors_shift, stheta=180),   # Rear
                         SonarSensor(base_dist=sensors_shift, stheta=270)]   # Right
 
     def get_sensors_values(self):
-        return np.array([self.sensors[0].range,
-                         self.sensors[1].range,
-                         self.sensors[2].range,
-                         self.sensors[3].range])
+        return np.array([sensor.range for sensor in self.sensors]) 
+                         # self.sensors[0].range,
+                         # self.sensors[1].range,
+                         # self.sensors[2].range,
+                         # self.sensors[3].range])
 
     def get_state_point(self):
         return Point(self.x, self.y)
@@ -164,7 +165,7 @@ class SimManager:
 
         if debug:
             step_end = time.time()
-            # print(sim.get_state())
+            print(sim.get_state())
             # print("Bot position:", (self.bot.x, self.bot.y, self.bot.theta))
             bot_state_calc_t = (sensors_start - step_start) * 1000
             sensors_calc_t   = (sensors_end - sensors_start) * 1000
@@ -188,7 +189,7 @@ class SimManager:
 
     def get_state (self):
         # pass
-        return np.hstack([self.target_dir, self.bot.get_sensors_values()])
+        return np.hstack([self.target_dir, self.bot.get_sensors_values()])#, to_radians(self.bot.theta)])
 
 
     def show_map (self, resolution_m_px=1):
