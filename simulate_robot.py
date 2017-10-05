@@ -63,26 +63,27 @@ class Robot(object):
         return (self.x, self.y, self.theta)
 
     def sample_step(self, dt=0):
+        state = np.ndarray(shape=3, dtype=np.float32)
         self.t_cos = m.cos(m.radians(self.theta))
         self.t_sin = m.sin(m.radians(self.theta))
 
-        new_x = self.x + self.ux * dt * self.t_cos \
+        state[0] = self.x + self.ux * dt * self.t_cos \
                        - self.uy * dt * self.t_sin
 
-        new_y = self.y + self.uy * dt * self.t_cos \
+        state[1] = self.y + self.uy * dt * self.t_cos \
                        + self.ux * dt * self.t_sin
 
-        new_t = self.theta + self.wz * dt
+        state[2] = self.theta + self.wz * dt
 
         # state = get_new_state(np.array([dt, self.x, self.y, self.theta, self.ux, self.uy, self.wz], dtype=np.float32))
 
-        self.x      = new_x
-        self.y      = new_y
-        self.theta  = new_t
+        self.x      = state[0]
+        self.y      = state[1]
+        self.theta  = state[2]
 
     def proccess_sonar_sensors(self, obstacles_lines):
         for sonar in self.sensors:
-            sonar.update_base_point(x=self.x, y=self.y, theta=self.theta)
+            sonar.update_base_point(self.x, self.y, self.theta)
             sonar.update(obstacles_lines)
 
         # with Pool() as pool:

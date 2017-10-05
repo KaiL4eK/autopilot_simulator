@@ -97,8 +97,8 @@ def intersect_line_np( line_np, other_line_np ):
 
     return r
 
-line_type = nb.deferred_type()
-line_type.define(Line.class_type.instance_type)
+# line_type = nb.deferred_type()
+# line_type.define(Line.class_type.instance_type)
 
 @nb.njit
 def line_from_radial_np(base_point, theta, length=1.):

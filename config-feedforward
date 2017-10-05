@@ -4,8 +4,8 @@
 # or the experiment itself.  This is the only required section.
 [NEAT]
 fitness_criterion     = max
-fitness_threshold     = 100
-pop_size              = 100
+fitness_threshold     = 99.95
+pop_size              = 200
 reset_on_extinction   = 0
 
 [DefaultGenome]
@@ -22,7 +22,7 @@ node_add_prob           = 0.2
 node_delete_prob        = 0.2
 activation_default      = sigmoid
 activation_options      = sigmoid
-activation_mutate_rate  = 0.0
+activation_mutate_rate  = 0.05
 aggregation_default     = sum
 aggregation_options     = sum
 aggregation_mutate_rate = 0.0
@@ -56,7 +56,8 @@ compatibility_threshold = 3.0
 
 [DefaultStagnation]
 species_fitness_func = max
-max_stagnation  = 20
+max_stagnation  = 50
+species_elitism = 3
 
 [DefaultReproduction]
 elitism            = 2
