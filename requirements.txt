@@ -1,3 +1,4 @@
+python3-tk
 numba
 jinja2
 pygame
@@ -6,6 +7,8 @@ cython
 gym
 gizeh
 moviepy
+graphviz
+matplotlib
 #-e git+https://github.com/peter-ch/MultiNEAT.git#egg=MultiNEAT
 #-e git+https://github.com/CodeReclaimers/neat-python.git#egg=neat-python
 #-e git+https://github.com/noio/peas.git#egg=peas
