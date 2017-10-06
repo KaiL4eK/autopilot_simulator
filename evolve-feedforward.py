@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Single-pole balancing experiment using a feed-forward neural network.
 """
@@ -6,7 +8,23 @@ from __future__ import print_function
 
 import os
 import sys
-sys.path.append(os.path.expanduser('~/Dev/neat-python'))
+import getopt
+
+logfile = ''
+try:
+    opts, args = getopt.getopt(sys.argv[1:],"hl:",["lfile="])
+except getopt.GetoptError:
+    print('evolve-feedforward.py -l <logfile>')
+    sys.exit(2)
+for opt, arg in opts:
+    if opt == '-h':
+        print('evolve-feedforward.py -l <logfile>')
+        sys.exit()
+    elif opt in ("-l", "--lfile"):
+        logfile = arg
+if logfile:
+    print('Log file is', logfile)
+    sys.stdout = open(logfile,"w")
 
 import pickle
 import time
