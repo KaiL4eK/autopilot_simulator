@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<map>
+	<size width='40' height='15' />
+	<obstacles>
+		<rectangle ul_x='6' ul_y='15' width='2' height='11' />
+		<rectangle ul_x='14' ul_y='11' width='2' height='11' />
+		<rectangle ul_x='22' ul_y='15' width='2' height='11' />
+		<rectangle ul_x='30' ul_y='11' width='2' height='11' />		
+	</obstacles>
+
+</map>
