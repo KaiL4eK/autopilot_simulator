@@ -36,10 +36,12 @@ import visualize
 
 from simulate_robot import *
 
-simulation_seconds = 15.0
+simulation_seconds = 20.0
 map_filename = 'two_obstacles.pmap'
+map_filename = 'maze.pmap'
 
-resol = 0.02
+
+resol = 0.03
 dt = 1/1000 # 200 Hz
 
 sim_map = get_map_from_file(map_filename)
@@ -49,8 +51,8 @@ def eval_genome(genome, config, img=None):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
 
     sim = SimManager(dt=dt,
-                        bot=Robot(x=3, y=7.5, theta=0),
-                        target=CircleTarget(x=18, y=5),
+                        bot=Robot(x=2, y=10, theta=0),
+                        target=CircleTarget(x=36, y=2),
                         map_data=sim_map)
 
     # sim2 = SimManager(dt=dt,
@@ -76,12 +78,12 @@ def eval_genome(genome, config, img=None):
 
         # print(action)
         
-        sim.sample_step(action, False)
+        sim.sample_step(action)
         if sim.bot_collision:
             break
 
 
-    if img:
+    if img is not None:
         for point in sim.path:
             time_rate = point[0] / simulation_seconds
             cv2.circle(img, center=(int(point[1] / resol), int(point[2] / resol)), 
@@ -105,8 +107,6 @@ def eval_genomes(genomes, config):
 
 
 def run():
-    # Load the config file, which is assumed to live in
-    # the same directory as this script.
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, 'config-feedforward')
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -118,9 +118,11 @@ def run():
     pop.add_reporter(stats)
     pop.add_reporter(neat.StdOutReporter(True))
 
-    pe = neat.ParallelEvaluator(4, eval_genome)
-    winner = pop.run(pe.evaluate)
-    # winner = pop.run(eval_genomes)
+    if 1:
+        pe = neat.ParallelEvaluator(4, eval_genome)
+        winner = pop.run(pe.evaluate)
+    else:
+        winner = pop.run(eval_genomes)
 
     # Save the winner.
     with open('winner-feedforward', 'wb') as f:

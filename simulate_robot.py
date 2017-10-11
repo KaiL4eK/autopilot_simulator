@@ -18,6 +18,8 @@ from multiprocessing import Pool
 #   |
 #   ------x
 
+debug = False
+
 circle_target_spec = [('x', nb.float32), 
                       ('y', nb.float32),
                       ('r', nb.float32)]
@@ -39,22 +41,42 @@ class Robot(object):
         self.theta = theta
 
         self.r      = 0.56
+        
         self.ux     = 0.0     # m / sec
         self.uy     = 0.0     # m / sec
         self.wz     = 0.0     # degree / sec
+
+        self.ax     = 0.0
+        self.ay     = 0.0
+        self.eps_z  = 0.0
 
         sensors_shift = 0.2
         self.sensors = [SonarSensor(base_dist=sensors_shift, stheta=0),     # Front
                         SonarSensor(base_dist=sensors_shift, stheta=90),    # Left
                         # SonarSensor(base_dist=sensors_shift, stheta=180),   # Rear
-                        SonarSensor(base_dist=sensors_shift, stheta=270)]   # Right
+                        SonarSensor(base_dist=sensors_shift, stheta=-90)]   # Right
+
+    def set_control_inputs(self, inputs):
+        # inputs = inputs * 2 * 9.81
+
+        if debug:
+            # self.ax = inputs[0]
+            # self.ay = inputs[1]
+            # self.eps_z = inputs[2]
+
+            self.ux = inputs[0] * 100
+            self.uy = inputs[1] * 100
+            self.wz = inputs[2] * 1000
+        else:
+            # self.ax = inputs[0]
+            # self.ay = inputs[1]
+            # self.eps_z = inputs[2]
+            self.ux = inputs[0] * 10
+            self.uy = inputs[1] * 10
+            self.wz = inputs[2] * 100
 
     def get_sensors_values(self):
         return np.array([sensor.range for sensor in self.sensors]) 
-                         # self.sensors[0].range,
-                         # self.sensors[1].range,
-                         # self.sensors[2].range,
-                         # self.sensors[3].range])
 
     def get_state_point(self):
         return Point(self.x, self.y)
@@ -63,6 +85,10 @@ class Robot(object):
         return (self.x, self.y, self.theta)
 
     def sample_step(self, dt=0):
+        self.ux += self.ax * dt;
+        self.uy += self.ay * dt;
+        self.wz += self.eps_z * dt;
+
         state = np.ndarray(shape=3, dtype=np.float32)
         self.t_cos = m.cos(m.radians(self.theta))
         self.t_sin = m.sin(m.radians(self.theta))
@@ -126,7 +152,7 @@ class SimManager:
         self.bot.proccess_sonar_sensors(self.map_data.get_obstacle_lines())
 
 
-    def sample_step (self, inputs, debug):
+    def sample_step (self, inputs):
         if debug:
             step_start = time.time()
 
@@ -135,14 +161,10 @@ class SimManager:
         self.t += self.dt
 
         if debug:
-            self.bot.ux = inputs[0] * 100
-            self.bot.uy = inputs[1] * 100
-            self.bot.wz = inputs[2] * 1000
+            self.bot.set_control_inputs(inputs)
         else:
             if self.t - self.prev_control_upd_t >= 5/1000:
-                self.bot.ux = inputs[0] * 10
-                self.bot.uy = inputs[1] * 10
-                self.bot.wz = inputs[2] * 100
+                self.bot.set_control_inputs(inputs)
                 self.prev_control_upd_t = self.t
 
         self.bot.sample_step(self.dt)
@@ -291,10 +313,12 @@ class SimManager:
 
 
 if __name__ == '__main__':
+    debug = True
     filename = 'two_obstacles.pmap'
+    filename = 'maze.pmap'
     sim = SimManager(dt=0.001, # 200 Hz
-                        bot=Robot(x=2, y=8, theta=0),
-                        target=CircleTarget(x=18, y=5),
+                        bot=Robot(x=2, y=10, theta=0),
+                        target=CircleTarget(x=36, y=2),
                         map_data=get_map_from_file(filename))
 
     while True:
@@ -303,7 +327,7 @@ if __name__ == '__main__':
 
         inputs = sim.process_input()
 
-        if not sim.sample_step(inputs, True):
+        if not sim.sample_step(inputs):
             exit(1)
 
         
