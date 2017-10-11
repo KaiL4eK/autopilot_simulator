@@ -81,7 +81,7 @@ def eval_genome(genome, config, img=None):
             break
 
 
-    if img:
+    if img is not None:
         for point in sim.path:
             time_rate = point[0] / simulation_seconds
             cv2.circle(img, center=(int(point[1] / resol), int(point[2] / resol)), 
@@ -130,18 +130,17 @@ def run():
 
     cv2.waitKey(0)
 
-    visualize.plot_stats(stats, ylog=True, filename="feedforward-fitness.svg")
+    visualize.plot_stats(stats, ylog=False, filename="feedforward-fitness.svg")
     visualize.plot_species(stats, filename="feedforward-speciation.svg")
 
-    node_names = {}
-    # node_names = {-1: 'x', -2: 'dx', -3: 'theta', -4: 'dtheta', 0: 'control'}
-    visualize.draw_net(config, winner, True, node_names=node_names)
+    node_names = {-1: 'ext', -2: 'eyt', -3: 'sf', -4: 'sl', -5: 'sr', 0: 'ux', 1: 'uy', 2: 'wz'}
+    visualize.draw_net(config, winner, False, node_names=node_names)
 
-    visualize.draw_net(config, winner, view=True, node_names=node_names,
+    visualize.draw_net(config, winner, view=False, node_names=node_names,
                        filename="winner-feedforward.gv")
-    visualize.draw_net(config, winner, view=True, node_names=node_names,
+    visualize.draw_net(config, winner, view=False, node_names=node_names,
                        filename="winner-feedforward-enabled.gv", show_disabled=False)
-    visualize.draw_net(config, winner, view=True, node_names=node_names,
+    visualize.draw_net(config, winner, view=False, node_names=node_names,
                        filename="winner-feedforward-enabled-pruned.gv", show_disabled=False, prune_unused=True)
 
 
