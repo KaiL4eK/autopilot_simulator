@@ -57,23 +57,26 @@ class Robot(object):
                         SonarSensor(base_dist=sensors_shift, stheta=-90)]   # Right
 
     def set_control_inputs(self, inputs):
-        # inputs = inputs * 2 * 9.81
+        if 1: # Forces
+            inputs = inputs * 2 * 9.81
 
-        if debug:
-            # self.ax = inputs[0]
-            # self.ay = inputs[1]
-            # self.eps_z = inputs[2]
-
-            self.ux = inputs[0] * 100
-            self.uy = inputs[1] * 100
-            self.wz = inputs[2] * 1000
-        else:
-            # self.ax = inputs[0]
-            # self.ay = inputs[1]
-            # self.eps_z = inputs[2]
-            self.ux = inputs[0] * 10
-            self.uy = inputs[1] * 10
-            self.wz = inputs[2] * 100
+            if debug:
+                self.ax = inputs[0]
+                self.ay = inputs[1]
+                self.eps_z = inputs[2]
+            else:
+                self.ax = inputs[0]
+                self.ay = inputs[1]
+                self.eps_z = inputs[2]
+        else: # Speeds
+            if debug:
+                self.ux = inputs[0] * 100
+                self.uy = inputs[1] * 100
+                self.wz = inputs[2] * 1000
+            else:
+                self.ux = inputs[0] * 10
+                self.uy = inputs[1] * 10
+                self.wz = inputs[2] * 100
 
     def get_sensors_values(self):
         return np.array([sensor.range for sensor in self.sensors]) 
