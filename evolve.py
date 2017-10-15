@@ -24,7 +24,7 @@ for opt, arg in opts:
         logfile = arg
 if logfile:
     print('Log file is', logfile)
-    sys.stdout = open(logfile,"w")
+    sys.stdout = open(logfile, "w")
 
 import pickle
 import time
@@ -36,7 +36,7 @@ import visualize
 
 from simulate_robot import *
 
-simulation_seconds = 20.0
+simulation_seconds = 40.0
 map_filename = 'two_obstacles.pmap'
 map_filename = 'maze.pmap'
 
