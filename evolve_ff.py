@@ -10,26 +10,8 @@ import os
 import sys
 import getopt
 
-logfile = ''
-try:
-    opts, args = getopt.getopt(sys.argv[1:],"hl:",["lfile="])
-except getopt.GetoptError:
-    print('evolve-feedforward.py -l <logfile>')
-    sys.exit(2)
-for opt, arg in opts:
-    if opt == '-h':
-        print('evolve-feedforward.py -l <logfile>')
-        sys.exit()
-    elif opt in ("-l", "--lfile"):
-        logfile = arg
-if logfile:
-    print('Log file is', logfile)
-    sys.stdout = open(logfile, "w")
-
 import pickle
 import time
-
-# import cart_pole
 
 import neat
 import visualize
@@ -40,43 +22,22 @@ simulation_seconds = 40.0
 map_filename = 'two_obstacles.pmap'
 map_filename = 'maze.pmap'
 
-
 resol = 0.03
-dt = 1/1000 # 200 Hz
 
 sim_map = get_map_from_file(map_filename)
 
-# Use the NN network phenotype and the discrete actuator force function.
 def eval_genome(genome, config, img=None):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
 
-    sim = SimManager(dt=dt,
-                        bot=Robot(x=2, y=10, theta=0),
-                        target=CircleTarget(x=36, y=2),
-                        map_data=sim_map)
+    sim = SimManager(bot=Robot(x=2, y=10),
+                     target=CircleTarget(x=36, y=2),
+                     map_data=sim_map)
 
-    # sim2 = SimManager(dt=dt,
-    #                     bot=Robot(x=2, y=6, theta=0),
-    #                     target=CircleTarget(x=13, y=7),
-    #                     obstacles=[], map_size_m=map_shape)
-
-    # sim3 = SimManager(dt=dt,
-    #                     bot=Robot(x=11, y=1, theta=0),
-    #                     target=CircleTarget(x=13, y=7),
-    #                     obstacles=[], map_size_m=map_shape)
-
-    # sims = [sim1]
-    # fitnesses = [0, 0, 0]
-
-    # for i, sim in enumerate(sims):
     while sim.t < simulation_seconds:
 
         inputs = sim.get_state()
-        # print(inputs)
 
         action = net.activate(inputs)
-
-        # print(action)
         
         sim.sample_step(action)
         if sim.bot_collision:
@@ -89,8 +50,6 @@ def eval_genome(genome, config, img=None):
             cv2.circle(img, center=(int(point[1] / resol), int(point[2] / resol)), 
                             radius=1, thickness=-1, 
                             color=(255 - (255 * time_rate), 0, (255 * time_rate)))
-
-        # fitnesses[i] = 
 
     return 100-sim.get_fitness()
 

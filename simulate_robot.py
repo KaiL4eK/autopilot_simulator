@@ -34,7 +34,7 @@ class CircleTarget(object):
         return Point(self.x, self.y)
 
 class Robot(object):
-    def __init__ (self, x, y, theta):
+    def __init__ (self, x, y, theta=0):
 
         self.x = x
         self.y = y
@@ -135,11 +135,16 @@ def get_new_state(data):
     return np.array([new_x, new_y, new_t])
 
 class SimManager:
-    def __init__ (self, map_data, dt=0, bot=None, target=None):
+    bot_control_period_s    = 5/1000.
+    bot_sensors_period_s    = 25/1000.
+
+    time_step = bot_control_period_s
+
+    def __init__ (self, map_data, bot=None, target=None):
         self.bot = bot
         self.target = target
 
-        self.dt = dt
+        self.dt = self.time_step
         self.bot_collision = False
         self.t = 0
 
@@ -166,7 +171,7 @@ class SimManager:
         if debug:
             self.bot.set_control_inputs(inputs)
         else:
-            if self.t - self.prev_control_upd_t >= 5/1000:
+            if self.t - self.prev_control_upd_t >= self.bot_control_period_s:
                 self.bot.set_control_inputs(inputs)
                 self.prev_control_upd_t = self.t
 
@@ -177,7 +182,7 @@ class SimManager:
             self.bot.proccess_sonar_sensors(self.map_data.get_obstacle_lines())
             sensors_end = time.time()
         else:
-            if self.t - self.prev_sensors_upd_t >= 25/1000:
+            if self.t - self.prev_sensors_upd_t >= self.bot_sensors_period_s:
                 self.bot.proccess_sonar_sensors(self.map_data.get_obstacle_lines())
                 self.prev_sensors_upd_t = self.t           
 
@@ -319,10 +324,9 @@ if __name__ == '__main__':
     debug = True
     filename = 'two_obstacles.pmap'
     filename = 'maze.pmap'
-    sim = SimManager(dt=0.001, # 200 Hz
-                        bot=Robot(x=2, y=10, theta=0),
-                        target=CircleTarget(x=36, y=2),
-                        map_data=get_map_from_file(filename))
+    sim = SimManager(bot=Robot(x=2, y=10),
+                     target=CircleTarget(x=36, y=2),
+                     map_data=get_map_from_file(filename))
 
     while True:
 
