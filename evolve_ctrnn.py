@@ -78,7 +78,7 @@ def run():
     pop.add_reporter(stats)
     pop.add_reporter(neat.StdOutReporter(True))
 
-    if 0:
+    if 1:
         pe = neat.ParallelEvaluator(4, eval_genome)
         winner = pop.run(pe.evaluate)
     else:
