@@ -85,7 +85,7 @@ def run():
         winner = pop.run(eval_genomes)
 
     # Save the winner.
-    with open('winner-feedforward', 'wb') as f:
+    with open('winner-ctrnn', 'wb') as f:
         pickle.dump(winner, f)
 
     print(winner)
