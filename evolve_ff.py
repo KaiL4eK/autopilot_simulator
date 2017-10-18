@@ -18,6 +18,8 @@ import visualize
 
 from simulate_robot import *
 
+populations = None
+
 simulation_seconds = 40.0
 map_filename = 'two_obstacles.pmap'
 map_filename = 'maze.pmap'
@@ -75,15 +77,16 @@ def run():
     stats = neat.StatisticsReporter()
     pop.add_reporter(stats)
     pop.add_reporter(neat.StdOutReporter(True))
+    pop.add_reporter(neat.Checkpointer(generation_interval=100, filename_prefix='checkpoints/ff_'))
 
     if 1:
         pe = neat.ParallelEvaluator(4, eval_genome)
-        winner = pop.run(pe.evaluate)
+        winner = pop.run(pe.evaluate, populations)
     else:
-        winner = pop.run(eval_genomes)
+        winner = pop.run(eval_genomes, populations)
 
     # Save the winner.
-    with open('winner-ff', 'wb') as f:
+    with open('winners/winner-ff', 'wb') as f:
         pickle.dump(winner, f)
 
     print(winner)
@@ -94,8 +97,8 @@ def run():
     visualize.plot_species(stats, view=False, filename="pictures/feedforward-speciation.svg")
 
     node_names = {-1: 'ext', -2: 'eyt', -3: 'sf', -4: 'sl', -5: 'sr', 0: 'ux', 1: 'uy', 2: 'wz'}
-    visualize.draw_net(config, winner, False, node_names=node_names)
-
+    visualize.draw_net(config, winner, False, node_names=node_names,
+                       filename='pictures/Digraph.gv')
     visualize.draw_net(config, winner, view=False, node_names=node_names,
                        filename="pictures/winner-feedforward.gv")
     visualize.draw_net(config, winner, view=False, node_names=node_names,
