@@ -34,7 +34,7 @@ def eval_genome(genome, config, img=None):
     net.reset()
 
     sim = SimManager(bot=Robot(x=2, y=10),
-                     target=CircleTarget(x=36, y=2),
+                     target=CircleTarget(x=36, y=7.5),
                      map_data=sim_map)
 
     while sim.t < simulation_seconds:
