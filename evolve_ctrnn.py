@@ -47,7 +47,6 @@ def eval_genome(genome, config, img=None):
         if sim.bot_collision:
             break
 
-
     if img is not None:
         for point in sim.path:
             time_rate = point[0] / simulation_seconds
