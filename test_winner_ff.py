@@ -17,7 +17,7 @@ map_filename = 'maze.pmap'
 sim_map = get_map_from_file(map_filename)
 
 # load the winner
-with open('winner-feedforward', 'rb') as f:
+with open('winner-ff', 'rb') as f:
     c = pickle.load(f)
 
 print('Loaded genome:')
