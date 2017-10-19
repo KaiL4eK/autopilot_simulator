@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-
-"""
-Single-pole balancing experiment using a feed-forward neural network.
-"""
-
 from __future__ import print_function
 
 import os
@@ -36,15 +30,11 @@ def eval_genome(genome, config, img=None):
                      map_data=sim_map)
 
     while sim.t < simulation_seconds:
-
         inputs = sim.get_state()
-
         action = net.activate(inputs)
-        
         sim.sample_step(action)
         if sim.bot_collision:
             break
-
 
     if img is not None:
         for point in sim.path:
@@ -77,7 +67,7 @@ def run():
     stats = neat.StatisticsReporter()
     pop.add_reporter(stats)
     pop.add_reporter(neat.StdOutReporter(True))
-    pop.add_reporter(neat.Checkpointer(generation_interval=1, filename_prefix='checkpoints_ff/chk_'))
+    pop.add_reporter(neat.Checkpointer(generation_interval=100, filename_prefix='checkpoints_ff/chk_'))
 
     if 1:
         pe = neat.ParallelEvaluator(4, eval_genome)
@@ -93,16 +83,16 @@ def run():
 
     cv2.waitKey(0)
 
-    visualize.plot_stats(stats, view=False, ylog=True, filename="pictures/feedforward-fitness.svg")
-    visualize.plot_species(stats, view=False, filename="pictures/feedforward-speciation.svg")
+    visualize.plot_stats(stats, view=False, ylog=True, filename="pictures_ff/feedforward-fitness.svg")
+    visualize.plot_species(stats, view=False, filename="pictures_ff/feedforward-speciation.svg")
 
     node_names = {-1: 'ext', -2: 'eyt', -3: 'sf', -4: 'sl', -5: 'sr', 0: 'ux', 1: 'uy', 2: 'wz'}
     visualize.draw_net(config, winner, False, node_names=node_names,
-                       filename='pictures/Digraph.gv')
+                       filename='pictures_ff/Digraph.gv')
     visualize.draw_net(config, winner, view=False, node_names=node_names,
-                       filename="pictures/winner-feedforward.gv")
+                       filename="pictures_ff/winner-feedforward.gv")
     visualize.draw_net(config, winner, view=False, node_names=node_names,
-                       filename="pictures/winner-feedforward-enabled.gv", show_disabled=False)
+                       filename="pictures_ff/winner-feedforward-enabled.gv", show_disabled=False)
     #visualize.draw_net(config, winner, view=False, node_names=node_names,
     #                   filename="winner-feedforward-enabled-pruned.gv", show_disabled=False, prune_unused=True)
 
