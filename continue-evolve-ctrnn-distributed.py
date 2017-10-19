@@ -71,8 +71,6 @@ def run(filename, addr, authkey, mode, workers):
         )
 
     p = neat.Checkpointer.restore_checkpoint(filename)
-    p.run(eval_genomes)
-
     winner = p.run(de.evaluate)
 
     # stop evaluator
