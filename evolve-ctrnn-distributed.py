@@ -41,7 +41,7 @@ def eval_genome(genome, config):
 
     return 100-sim.get_fitness()
 
-def run(config_file, addr, authkey, mode, workers):
+def run(config_file, addr, authkey, mode, workers, chunk):
     # Load configuration.
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
@@ -61,7 +61,7 @@ def run(config_file, addr, authkey, mode, workers):
         addr,  # connect to addr
         authkey,  # use authkey to authenticate
         eval_genome,  # use eval_genome() to evaluate a genome
-        secondary_chunksize=40,  # send 4 genomes at once
+        secondary_chunksize=chunk,  # send 4 genomes at once
         num_workers=workers,  # when in secondary mode, use this many workers
         worker_timeout=10,  # when in secondary mode and workers > 1,
                             # wait at most 10 seconds for the result
@@ -158,6 +158,12 @@ if __name__ == '__main__':
         help="Force secondary mode (useful for debugging)",
         dest="mode",
         )
+    parser.add_argument(
+        "--chunk",
+        action="store",
+        help="chunk of genomes to send",
+        default=10,
+        )
     ns = parser.parse_args()
 
     address = ns.address
@@ -182,4 +188,4 @@ if __name__ == '__main__':
     print("Starting Node...")
     print("Please ensure that you are using more than one node.")
 
-    run(config_path, address, authkey, mode, workers)
+    run(config_path, address, authkey, mode, workers, ns.chunk)

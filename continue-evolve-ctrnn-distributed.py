@@ -41,14 +41,14 @@ def eval_genome(genome, config):
 
     return 100-sim.get_fitness()
 
-def run(filename, addr, authkey, mode, workers):
+def run(filename, addr, authkey, mode, workers, chunk):
 
     # setup an DistributedEvaluator
     de = neat.DistributedEvaluator(
         addr,  # connect to addr
         authkey,  # use authkey to authenticate
         eval_genome,  # use eval_genome() to evaluate a genome
-        secondary_chunksize=40,  # send 4 genomes at once
+        secondary_chunksize=chunk,  # send 4 genomes at once
         num_workers=workers,  # when in secondary mode, use this many workers
         worker_timeout=10,  # when in secondary mode and workers > 1,
                             # wait at most 10 seconds for the result
@@ -75,7 +75,7 @@ def run(filename, addr, authkey, mode, workers):
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
     p.add_reporter(neat.Checkpointer(generation_interval=100, filename_prefix='checkpoints_ctrnn/chk_'))
-    
+
     winner = p.run(de.evaluate)
 
     # stop evaluator
@@ -149,6 +149,12 @@ if __name__ == '__main__':
         dest="authkey",
         )
     parser.add_argument(
+        "--chunk",
+        action="store",
+        help="chunk of genomes to send",
+        default=10,
+        )
+    parser.add_argument(
         "--force-secondary","--force-slave",
         action="store_const",
         const=neat.distributed.MODE_SECONDARY,
@@ -174,4 +180,4 @@ if __name__ == '__main__':
     print("Recovering:", ns.checkpoint)
     print("Please ensure that you are using more than one node.")
 
-    run(ns.checkpoint, address, authkey, mode, workers)
+    run(ns.checkpoint, address, authkey, mode, workers, ns.chunk)
