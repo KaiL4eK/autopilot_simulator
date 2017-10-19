@@ -42,6 +42,9 @@ def eval_genome(genome, config):
     return 100-sim.get_fitness()
 
 def run(config_file, addr, authkey, mode, workers, chunk):
+
+    print('Chunk for', chunk, 'genomes')
+
     # Load configuration.
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
