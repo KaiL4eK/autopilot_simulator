@@ -182,4 +182,4 @@ if __name__ == '__main__':
     print("Recovering:", ns.checkpoint)
     print("Please ensure that you are using more than one node.")
 
-    run(ns.checkpoint, address, authkey, mode, workers, ns.chunk)
+    run(ns.checkpoint, address, authkey, mode, workers, int(ns.chunk))

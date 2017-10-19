@@ -191,4 +191,4 @@ if __name__ == '__main__':
     print("Starting Node...")
     print("Please ensure that you are using more than one node.")
 
-    run(config_path, address, authkey, mode, workers, ns.chunk)
+    run(config_path, address, authkey, mode, workers, int(ns.chunk))
