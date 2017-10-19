@@ -71,6 +71,11 @@ def run(filename, addr, authkey, mode, workers):
         )
 
     p = neat.Checkpointer.restore_checkpoint(filename)
+    p.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    p.add_reporter(stats)
+    p.add_reporter(neat.Checkpointer(generation_interval=100, filename_prefix='checkpoints_ctrnn/chk_'))
+    
     winner = p.run(de.evaluate)
 
     # stop evaluator
