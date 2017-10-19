@@ -43,6 +43,8 @@ def eval_genome(genome, config):
 
 def run(filename, addr, authkey, mode, workers, chunk):
 
+    print('Chunk for', chunk, 'genomes')
+
     # setup an DistributedEvaluator
     de = neat.DistributedEvaluator(
         addr,  # connect to addr
