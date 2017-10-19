@@ -1,5 +1,5 @@
 from __future__ import print_function
-from sim_map import *
+from qfs.sim_map import *
 
 import numpy as np
 import cv2

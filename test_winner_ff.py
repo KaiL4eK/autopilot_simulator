@@ -1,19 +1,14 @@
-"""
-Test the performance of the best genome produced by evolve-feedforward.py.
-"""
-
 from __future__ import print_function
 
 import os
 import pickle
 
-from simulate_robot import *
+from qfs.simulate_robot import *
 
 import neat
 from neat import nn
 
-map_filename = 'maze.pmap'
-
+map_filename = 'maps/maze.pmap'
 sim_map = get_map_from_file(map_filename)
 
 # load the winner
@@ -34,14 +29,12 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
 net = neat.nn.FeedForwardNetwork.create(c, config)
 
 resol = 0.03
-dt = 1/1000 # 200 Hz
 simulation_seconds = 30
 
 img = sim_map.get_image(resol)
-sim = SimManager(dt=dt,
-                    bot=Robot(x=2, y=10, theta=0),
-                    target=CircleTarget(x=36, y=2),
-                    map_data=sim_map)
+sim = SimManager(bot=Robot(x=2, y=10, theta=0),
+                 target=CircleTarget(x=36, y=2),
+                 map_data=sim_map)
 
 while sim.t < simulation_seconds:
 
