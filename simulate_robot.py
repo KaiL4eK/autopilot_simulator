@@ -209,8 +209,8 @@ class SimManager:
 
         return True
 
-    def get_fitness (self):
-        result = get_distance_to(self.bot.get_state_point(), 
+    def get_fitness (self): # X is increased ne negligate movement by Y
+        result = get_distance_to(Point(self.bot.x * 10, self.bot.y), #self.bot.get_state_point(), 
                                  self.target.get_state_point())
 
         if self.bot_collision:
