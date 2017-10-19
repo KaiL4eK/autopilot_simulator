@@ -5,9 +5,9 @@ import cv2
 import numpy as np
 import numba as nb
 import math as m
-from common import *
-from sim_map import *
-from sensors import *
+from qfs.common import *
+from qfs.sim_map import *
+from qfs.sensors import *
 
 from itertools import repeat
 from multiprocessing import Pool
@@ -325,8 +325,8 @@ class SimManager:
 
 if __name__ == '__main__':
     debug = True
-    filename = 'two_obstacles.pmap'
-    filename = 'maze.pmap'
+    filename = '../maps/two_obstacles.pmap'
+    filename = '../maps/maze.pmap'
     sim = SimManager(bot=Robot(x=2, y=10),
                      target=CircleTarget(x=36, y=2),
                      map_data=get_map_from_file(filename))

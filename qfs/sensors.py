@@ -1,4 +1,4 @@
-from common import *
+from qfs.common import *
 import numba as nb
 import numpy as np
 

@@ -1,7 +1,7 @@
 from __future__ import print_function, division
 
 import numpy as np
-from common import *
+from qfs.common import *
 
 
 import time

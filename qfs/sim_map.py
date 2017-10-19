@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 import xml.etree.ElementTree as etree
-from common import *
+from qfs.common import *
 
 import numpy as np
 import numba as nb

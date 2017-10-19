@@ -1,9 +1,9 @@
-from simulate_robot import *
+from qfs.simulate_robot import *
 import time
 
 simulation_seconds = 30.0
-map_filename 	= 'two_obstacles.pmap'
-filename 		= 'maze.pmap'
+map_filename 	= '../maps/two_obstacles.pmap'
+filename 		= '../maps/maze.pmap'
 sim_map = get_map_from_file(map_filename)
 
 check_count = 20

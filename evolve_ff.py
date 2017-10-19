@@ -16,13 +16,13 @@ import time
 import neat
 import visualize
 
-from simulate_robot import *
+from qfs.simulate_robot import *
 
 populations = None
 
 simulation_seconds = 40.0
-map_filename = 'two_obstacles.pmap'
-map_filename = 'maze.pmap'
+map_filename = 'maps/two_obstacles.pmap'
+map_filename = 'maps/maze.pmap'
 
 resol = 0.03
 
@@ -77,7 +77,7 @@ def run():
     stats = neat.StatisticsReporter()
     pop.add_reporter(stats)
     pop.add_reporter(neat.StdOutReporter(True))
-    pop.add_reporter(neat.Checkpointer(generation_interval=100, filename_prefix='checkpoints/ff_'))
+    pop.add_reporter(neat.Checkpointer(generation_interval=1, filename_prefix='checkpoints_ff/chk_'))
 
     if 1:
         pe = neat.ParallelEvaluator(4, eval_genome)
@@ -86,7 +86,7 @@ def run():
         winner = pop.run(eval_genomes, populations)
 
     # Save the winner.
-    with open('winners/winner-ff', 'wb') as f:
+    with open('winner-ff', 'wb') as f:
         pickle.dump(winner, f)
 
     print(winner)
