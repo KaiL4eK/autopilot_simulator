@@ -35,6 +35,13 @@ def get_distance_to (from_object, to_object):
     return m.hypot(dx, dy)
 
 @nb.njit
+def get_distance_to_x10_incr (from_object, to_object):
+    dx = to_object.x - from_object.x
+    dy = to_object.y - from_object.y
+
+    return m.hypot(dx * 10, dy)
+
+@nb.njit
 def get_base_vectors_to (from_object, to_object):
     dx = to_object.x - from_object.x
     dy = to_object.y - from_object.y
