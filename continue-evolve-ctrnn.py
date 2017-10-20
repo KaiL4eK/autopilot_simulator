@@ -11,7 +11,7 @@ import time
 import neat
 import visualize
 
-from simulate_robot import *
+from qfs.simulate_robot import *
 
 populations = None
 
