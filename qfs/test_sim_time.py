@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../')
+
 from qfs.simulate_robot import *
 import time
 

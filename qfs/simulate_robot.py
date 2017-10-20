@@ -1,5 +1,8 @@
 from __future__ import print_function
 
+import sys
+sys.path.append('../')
+
 import time
 import cv2
 import numpy as np
@@ -57,26 +60,21 @@ class Robot(object):
                         SonarSensor(base_dist=sensors_shift, stheta=-90)]   # Right
 
     def set_control_inputs(self, inputs):
-        if 1: # Forces
-            inputs = inputs * 2 * 9.81
+        # if 1: # Forces
+        inputs = inputs * 2 * 9.81
 
-            if debug:
-                self.ax = inputs[0]
-                self.ay = inputs[1]
-                self.eps_z = inputs[2]
-            else:
-                self.ax = inputs[0]
-                self.ay = inputs[1]
-                self.eps_z = inputs[2]
-        else: # Speeds
-            if debug:
-                self.ux = inputs[0] * 100
-                self.uy = inputs[1] * 100
-                self.wz = inputs[2] * 1000
-            else:
-                self.ux = inputs[0] * 10
-                self.uy = inputs[1] * 10
-                self.wz = inputs[2] * 100
+        self.ax = inputs[0]
+        self.ay = inputs[1]
+        self.eps_z = inputs[2] * 10
+        # else: # Speeds
+        #     if debug:
+        #         self.ux = inputs[0] * 100
+        #         self.uy = inputs[1] * 100
+        #         self.wz = inputs[2] * 1000
+        #     else:
+        #         self.ux = inputs[0] * 10
+        #         self.uy = inputs[1] * 10
+        #         self.wz = inputs[2] * 100
 
     def get_sensors_values(self):
         return np.array([sensor.range for sensor in self.sensors]) 
@@ -88,20 +86,19 @@ class Robot(object):
         return (self.x, self.y, self.theta)
 
     def sample_step(self, dt=0):
-        self.ux += self.ax * dt;
-        self.uy += self.ay * dt;
-        self.wz += self.eps_z * dt;
-
-        state = np.ndarray(shape=3, dtype=np.float32)
         self.t_cos = m.cos(m.radians(self.theta))
         self.t_sin = m.sin(m.radians(self.theta))
 
-        state[0] = self.x + self.ux * dt * self.t_cos \
-                       - self.uy * dt * self.t_sin
+        self.ux += self.ax * dt * self.t_cos \
+                    - self.ay * dt * self.t_sin
+        self.uy += self.ay * dt * self.t_cos \
+                    + self.ax * dt * self.t_sin;
+        self.wz += self.eps_z * dt;
 
-        state[1] = self.y + self.uy * dt * self.t_cos \
-                       + self.ux * dt * self.t_sin
+        state = np.ndarray(shape=3, dtype=np.float32)
 
+        state[0] = self.x + self.ux * dt
+        state[1] = self.y + self.uy * dt
         state[2] = self.theta + self.wz * dt
 
         # state = get_new_state(np.array([dt, self.x, self.y, self.theta, self.ux, self.uy, self.wz], dtype=np.float32))
@@ -115,14 +112,11 @@ class Robot(object):
             sonar.update_base_point(self.x, self.y, self.theta)
             sonar.update(obstacles_lines)
 
-        # with Pool() as pool:
-            # pool.starmap(sonar_update, zip(self.sensors, repeat(obstacles_lines)))
-
 @nb.njit(nb.float32[3](nb.float32[7]))
 def get_new_state(data):
     # dt, x, y, t, ux, uy, wz
-    t_cos = m.cos(m.radians(data[4]))
-    t_sin = m.sin(m.radians(data[4]))
+    t_cos = m.cos(m.radians(data[3]))
+    t_sin = m.sin(m.radians(data[3]))
 
     new_x = data[1] + data[4] * data[0] * t_cos \
                     - data[5] * data[0] * t_sin
@@ -197,7 +191,8 @@ class SimManager:
         if debug:
             step_end = time.time()
             print(sim.get_state())
-            # print("Bot position:", (self.bot.x, self.bot.y, self.bot.theta))
+            print(inputs)
+            print("Bot position:", (self.bot.x, self.bot.y, self.bot.theta))
             bot_state_calc_t = (sensors_start - step_start) * 1000
             sensors_calc_t   = (sensors_end - sensors_start) * 1000
             other_calc_t     = (step_end - sensors_end) * 1000
@@ -222,7 +217,6 @@ class SimManager:
         return result
 
     def get_state (self):
-        # pass
         return np.hstack([self.target_dir, self.bot.get_sensors_values()])#, to_radians(self.bot.theta)])
 
 

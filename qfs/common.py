@@ -21,6 +21,8 @@ class Point(object):
         self.x = x
         self.y = y
 
+    
+
     # def __str__(self):
     #     return "(%s, %s)" % (self.x, self.y) 
 

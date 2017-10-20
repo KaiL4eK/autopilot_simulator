@@ -12,8 +12,6 @@ import visualize
 
 from simulate_robot import *
 
-populations = None
-
 simulation_seconds = 40.0
 map_filename = 'maps/two_obstacles.pmap'
 map_filename = 'maps/maze.pmap'
@@ -73,9 +71,9 @@ def run():
 
     if 1:
         pe = neat.ParallelEvaluator(4, eval_genome)
-        winner = pop.run(pe.evaluate, populations)
+        winner = pop.run(pe.evaluate)
     else:
-        winner = pop.run(eval_genomes, populations)
+        winner = pop.run(eval_genomes)
 
     # Save the winner.
     with open('winner-ctrnn', 'wb') as f:

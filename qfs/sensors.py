@@ -53,21 +53,23 @@ class SonarSensor(object):
 
     def update(self, lines):
         self.ray_values = np.ones(shape=(self.nrows), dtype=np.float32)
-        self.range = update_sonar(self.nrows, self.ray_angles, self.ray_values, lines, self.dist_max, self.get_state_point(), self.base_theta)
+        update_sonar(self.nrows, self.ray_angles, self.ray_values, lines, self.dist_max, self.get_state_point(), self.base_theta)
+        self.range = self.ray_values.min()
 
 
 @nb.njit()
 def update_sonar(nrows, ray_angles, ray_values, lines, dist_max, base_point, base_theta):
     for ray_idx in nb.prange(nrows):
+        ray_rng = ray_values[ray_idx]
         ray_line_np = line_from_radial_np(base_point=base_point, 
                                           length=dist_max, 
                                           theta=base_theta + ray_angles[ray_idx])
         for i in nb.prange(len(lines)):
             r = intersect_line_np(ray_line_np, lines[i])
-            if r > 0:
-                ray_values[ray_idx] = np.array([r, ray_values[ray_idx]]).min()
+            if r > 0 and r < ray_rng:
+                ray_rng = r
 
-    return ray_values.min()
+        ray_values[ray_idx] = ray_rng        
 
 # sonar_type = nb.deferred_type()
 # sonar_type.define(SonarSensor.class_type.instance_type)
