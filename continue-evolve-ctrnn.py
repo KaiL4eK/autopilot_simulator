@@ -13,9 +13,7 @@ import visualize
 
 from qfs.simulate_robot import *
 
-populations = None
-
-simulation_seconds = 40.0
+simulation_seconds = 100.0
 map_filename = 'maps/two_obstacles.pmap'
 map_filename = 'maps/maze.pmap'
 
@@ -59,7 +57,13 @@ def eval_genomes(genomes, config):
     cv2.imshow('1', cv2.flip(img, 0))
     cv2.waitKey(30)
 
-def run(filepath):
+def run(filepath, pop_count):
+
+    local_dir = os.path.dirname(__file__)
+    config_path = os.path.join(local_dir, 'config-ctrnn')
+    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                         config_path)
 
     pop = neat.Checkpointer.restore_checkpoint(filepath)
     stats = neat.StatisticsReporter()
@@ -69,9 +73,9 @@ def run(filepath):
 
     if 1:
         pe = neat.ParallelEvaluator(4, eval_genome)
-        winner = pop.run(pe.evaluate, populations)
+        winner = pop.run(pe.evaluate, pop_count)
     else:
-        winner = pop.run(eval_genomes, populations)
+        winner = pop.run(eval_genomes, pop_count)
 
     # Save the winner.
     with open('winner-ctrnn', 'wb') as f:
@@ -101,7 +105,14 @@ if __name__ == '__main__':
         help="path to checkpoint file",
         action="store",
         )
+    parser.add_argument(
+        "--pops",
+        help="Count of population",
+        default=None,
+        action="store",
+        )
+
 
     ns = parser.parse_args()
 
-    run(ns.checkpoint)
+    run(ns.checkpoint, ns.pops)
