@@ -10,7 +10,7 @@ import time
 import neat
 import visualize
 
-from simulate_robot import *
+from qfs.simulate_robot import *
 
 simulation_seconds = 40.0
 map_filename = 'maps/two_obstacles.pmap'
