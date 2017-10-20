@@ -3,7 +3,7 @@ from __future__ import print_function
 import os
 import sys
 import getopt
-import argparser
+import argparse
 
 import pickle
 import time
