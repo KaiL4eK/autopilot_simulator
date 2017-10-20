@@ -13,7 +13,7 @@ import visualize
 
 from qfs.simulate_robot import *
 
-simulation_seconds = 100.0
+simulation_seconds = 200.0
 map_filename = 'maps/two_obstacles.pmap'
 map_filename = 'maps/maze.pmap'
 
@@ -45,7 +45,6 @@ def eval_genome(genome, config, img=None):
                             color=(255 - (255 * time_rate), 0, (255 * time_rate)))
 
     return 100-sim.get_fitness()
-
 
 def eval_genomes(genomes, config):
 
