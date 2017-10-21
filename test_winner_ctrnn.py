@@ -35,7 +35,7 @@ simulation_seconds = 40
 
 img = sim_map.get_image(resol)
 sim = SimManager(bot=Robot(x=2, y=10, theta=0),
-                 target=CircleTarget(x=36, y=7.5),
+                 target=[36, 7.5],
                  map_data=sim_map)
 
 while sim.t < simulation_seconds:
@@ -48,7 +48,7 @@ while sim.t < simulation_seconds:
         print('Failed!')
         break
 
-print('Result:', 100-sim.get_fitness())
+print('Result:', -sim.get_fitness())
 
 if img is not None:
     for point in sim.path:

@@ -28,6 +28,8 @@ class Robot(object):
 
         self.r      = 0.56
         
+        self.initial_x = x
+
         self.force_rates = np.array([2 * 9.81, 2 * 9.81, 2 * 9.81 * 10], dtype=np.float32)
         self.forces = np.array([0., 0., 0.], dtype=np.float32)
         self.speeds = np.array([0., 0., 0.], dtype=np.float32)  # m / sec, m / sec, degree / sec
@@ -170,7 +172,8 @@ class SimManager:
     # Try to minimize this function
     def get_fitness (self):
     
-        result = np.mean(self.distances)
+        result = np.mean(self.distances) * \
+                    (1 + m.fabs(self.target[0] - self.bot.getX()) / (self.target[0] - self.bot.initial_x))
 
         if self.bot_collision:
             result *= 2
@@ -193,7 +196,6 @@ class SimManager:
         cv2.circle(img, center=(int(self.bot.getX() / resolution_m_px), int(self.bot.getY() / resolution_m_px)), 
                         radius=int(self.bot.r/resolution_m_px), 
                         thickness=-1, color=bot_clr)
-
 
         dir_line = line_from_radial(base_point=self.bot.get_state_point(), theta=self.bot.getTheta())
 
