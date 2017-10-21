@@ -13,7 +13,7 @@ import visualize
 
 from qfs.simulate_robot import *
 
-simulation_seconds = 100
+simulation_seconds = 400
 map_filename = 'maps/two_obstacles.pmap'
 map_filename = 'maps/maze.pmap'
 
@@ -101,7 +101,7 @@ def run(filepath, pop_count):
     #                   filename="winner-feedforward-enabled-pruned.gv", show_disabled=False, prune_unused=True)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="NEAT xor experiment evaluated across multiple machines.")
+    parser = argparse.ArgumentParser(description="Description")
     parser.add_argument(
         "checkpoint",   
         help="path to checkpoint file",
@@ -116,13 +116,14 @@ if __name__ == '__main__':
     parser.add_argument(
         "--simtime",
         help="Simulation time",
-        default=100,
+        default=None,
         action="store",
         )
 
 
     ns = parser.parse_args()
-    simulation_seconds = int(ns.simtime)
+    if ns.simtime is not None:
+        simulation_seconds = int(ns.simtime)
 
     print('Simulation time:', simulation_seconds)
 

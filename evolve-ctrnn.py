@@ -3,6 +3,7 @@ from __future__ import print_function
 import os
 import sys
 import getopt
+import argparse
 
 import pickle
 import time
@@ -97,4 +98,19 @@ def run():
     #                   filename="winner-feedforward-enabled-pruned.gv", show_disabled=False, prune_unused=True)
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Description")
+    parser.add_argument(
+        "--simtime",
+        help="Simulation time",
+        default=None,
+        action="store",
+        )
+
+
+    ns = parser.parse_args()
+    if ns.simtime is not None:
+        simulation_seconds = int(ns.simtime)
+
+    print('Simulation time:', simulation_seconds)
+
     run()
