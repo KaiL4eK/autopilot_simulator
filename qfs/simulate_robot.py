@@ -23,35 +23,15 @@ from multiprocessing import Pool
 
 debug = False
 
-circle_target_spec = [('x', nb.float32), 
-                      ('y', nb.float32),
-                      ('r', nb.float32)]
-@nb.jitclass(circle_target_spec)
-class CircleTarget(object):
-    def __init__ (self, x=0, y=0):
-        self.x  = x
-        self.y  = y
-        self.r  = 0.01
-
-    def get_state_point(self):
-        return Point(self.x, self.y)
-
 class Robot(object):
     def __init__ (self, x, y, theta=0):
 
-        self.x = x
-        self.y = y
-        self.theta = theta
-
         self.r      = 0.56
         
-        self.ux     = 0.0     # m / sec
-        self.uy     = 0.0     # m / sec
-        self.wz     = 0.0     # degree / sec
-
-        self.ax     = 0.0
-        self.ay     = 0.0
-        self.eps_z  = 0.0
+        self.force_rates = np.array([2 * 9.81, 2 * 9.81, 2 * 9.81 * 10], dtype=np.float32)
+        self.forces = np.array([0., 0., 0.], dtype=np.float32)
+        self.speeds = np.array([0., 0., 0.], dtype=np.float32)  # m / sec, m / sec, degree / sec
+        self.state  = np.array([x, y, theta], dtype=np.float32)  # x, y, theta
 
         sensors_shift = 0.2
         self.sensors = [SonarSensor(base_dist=sensors_shift, stheta=0),     # Front
@@ -59,74 +39,51 @@ class Robot(object):
                         # SonarSensor(base_dist=sensors_shift, stheta=180),   # Rear
                         SonarSensor(base_dist=sensors_shift, stheta=-90)]   # Right
 
-    def set_control_inputs(self, inputs):
-        # if 1: # Forces
-        inputs = inputs * 2 * 9.81
+    def getTheta(self):
+        return self.state[2]
 
-        self.ax = inputs[0]
-        self.ay = inputs[1]
-        self.eps_z = inputs[2] * 10
-        # else: # Speeds
-        #     if debug:
-        #         self.ux = inputs[0] * 100
-        #         self.uy = inputs[1] * 100
-        #         self.wz = inputs[2] * 1000
-        #     else:
-        #         self.ux = inputs[0] * 10
-        #         self.uy = inputs[1] * 10
-        #         self.wz = inputs[2] * 100
+    def getY(self):
+        return self.state[1]
+
+    def getX(self):
+        return self.state[0]
+
+    def set_control_inputs(self, inputs):
+        self.forces = inputs * self.force_rates
 
     def get_sensors_values(self):
         return np.array([sensor.range for sensor in self.sensors]) 
 
     def get_state_point(self):
-        return Point(self.x, self.y)
+        return Point(self.getX(), self.getY())
 
-    def get_state_tuple(self):
-        return (self.x, self.y, self.theta)
+    def np_get_state_point(self):
+        return self.state[0:2]
 
-    def sample_step(self, dt=0):
-        self.t_cos = m.cos(m.radians(self.theta))
-        self.t_sin = m.sin(m.radians(self.theta))
-
-        self.ux += self.ax * dt * self.t_cos \
-                    - self.ay * dt * self.t_sin
-        self.uy += self.ay * dt * self.t_cos \
-                    + self.ax * dt * self.t_sin;
-        self.wz += self.eps_z * dt;
-
-        state = np.ndarray(shape=3, dtype=np.float32)
-
-        state[0] = self.x + self.ux * dt
-        state[1] = self.y + self.uy * dt
-        state[2] = self.theta + self.wz * dt
-
-        # state = get_new_state(np.array([dt, self.x, self.y, self.theta, self.ux, self.uy, self.wz], dtype=np.float32))
-
-        self.x      = state[0]
-        self.y      = state[1]
-        self.theta  = state[2]
+    def sample_step(self, dt):
+        update_state(dt, self.state, self.speeds, self.forces)
 
     def proccess_sonar_sensors(self, obstacles_lines):
         for sonar in self.sensors:
-            sonar.update_base_point(self.x, self.y, self.theta)
+            sonar.update_base_point(self.getX(), self.getY(), self.getTheta())
             sonar.update(obstacles_lines)
 
-@nb.njit(nb.float32[3](nb.float32[7]))
-def get_new_state(data):
-    # dt, x, y, t, ux, uy, wz
-    t_cos = m.cos(m.radians(data[3]))
-    t_sin = m.sin(m.radians(data[3]))
+@nb.njit(nb.void(nb.float32, nb.float32[3], nb.float32[3], nb.float32[3]))
+def update_state(dt, position, speed, force):
+    # dt, x, y, th, ux, uy, wz
+    t_cos = m.cos(m.radians(position[2]))
+    t_sin = m.sin(m.radians(position[2]))
 
-    new_x = data[1] + data[4] * data[0] * t_cos \
-                    - data[5] * data[0] * t_sin
+    # R     = np.matrix([[t_cos, -t_sin, 0], [t_sin, t_cos, 0], [0, 0, 1]], dtype=np.float32)
 
-    new_y = data[2] + data[5] * data[0] * t_cos \
-                    + data[4] * data[0] * t_sin
+    speed[0] += (force[0] * t_cos - force[1] * t_sin) * dt
+    speed[1] += (force[0] * t_sin + force[1] * t_cos) * dt
+    speed[2] += force[2] * dt
 
-    new_t = data[3] + data[6] * data[0]
+    position[0] += speed[0] * dt
+    position[1] += speed[1] * dt
+    position[2] += speed[2] * dt
 
-    return np.array([new_x, new_y, new_t])
 
 class SimManager:
     bot_control_period_s    = 5/1000.
@@ -136,7 +93,7 @@ class SimManager:
 
     def __init__ (self, map_data, bot, target, save_path=True):
         self.bot = bot
-        self.target = target
+        self.target = np.array(target, dtype=np.float32)
 
         self.dt = self.time_step
         self.bot_collision = False
@@ -151,8 +108,8 @@ class SimManager:
         self.distances = []
         self.map_data = map_data
 
-        self.target_dir = get_base_vectors_to(self.bot.get_state_point(), 
-                                              self.target.get_state_point())
+        self.target_dir = np_get_base_vectors_to(self.bot.np_get_state_point(), 
+                                                 self.target)
 
         self.bot.proccess_sonar_sensors(self.map_data.get_obstacle_lines())
 
@@ -161,7 +118,7 @@ class SimManager:
         if debug:
             step_start = time.time()
 
-        inputs = np.clip(inputs, -1, 1)
+        inputs = np.clip(inputs, -1, 1).astype(np.float32)
 
         self.t += self.dt
 
@@ -172,7 +129,7 @@ class SimManager:
                 self.bot.set_control_inputs(inputs)
                 self.prev_control_upd_t = self.t
 
-        self.bot.sample_step(self.dt)
+        self.bot.sample_step(float(self.dt))
 
         if debug:
             sensors_start = time.time()
@@ -183,22 +140,22 @@ class SimManager:
                 self.bot.proccess_sonar_sensors(self.map_data.get_obstacle_lines())
                 self.prev_sensors_upd_t = self.t           
 
-        # self.bot_collision = check_collision(self.map_data, self.bot.r, self.bot.get_state_point())
-        self.bot_collision = check_collision_np(self.map_data.get_obstacle_points(), self.map_data.size, self.bot.r, self.bot.get_state_tuple())
+        self.bot_collision = check_collision_np(self.map_data.get_obstacle_points(), self.map_data.size, self.bot.r, self.bot.np_get_state_point())
 
-        self.target_dir = get_base_vectors_to(self.bot.get_state_point(), 
-                                              self.target.get_state_point())
+        self.target_dir = np_get_base_vectors_to(self.bot.np_get_state_point(), 
+                                                 self.target)
 
         if self.save_path:
-            self.path.append((self.t, self.bot.x, self.bot.y))
+            self.path.append((self.t, self.bot.getX(), self.bot.getY()))
 
-        self.distances.append(get_distance_to(self.bot.get_state_point(), self.target.get_state_point()))
+        self.distances.append(np_get_distance_to_x3_incr(self.bot.np_get_state_point(), 
+                                                         self.target))
 
         if debug:
             step_end = time.time()
             print(sim.get_state())
             print(inputs)
-            print("Bot position:", (self.bot.x, self.bot.y, self.bot.theta))
+            print("Bot position:", (self.bot.getX(), self.bot.getY(), self.bot.getTheta()))
             bot_state_calc_t = (sensors_start - step_start) * 1000
             sensors_calc_t   = (sensors_end - sensors_start) * 1000
             other_calc_t     = (step_end - sensors_end) * 1000
@@ -211,13 +168,8 @@ class SimManager:
         return True
 
     # Try to minimize this function
-    def get_fitness (self): # X is increased ne negligate movement by Y
-        # result = get_distance_to_x10_incr(self.bot.get_state_point(), 
-                                          # self.target.get_state_point())
-
-        # result = get_distance_to(self.bot.get_state_point(), 
-                                 # self.target.get_state_point())        
-
+    def get_fitness (self):
+    
         result = np.mean(self.distances)
 
         if self.bot_collision:
@@ -225,66 +177,62 @@ class SimManager:
 
         return result 
 
+
     def get_state (self):
-        return np.hstack([self.target_dir, self.bot.get_sensors_values()])#, to_radians(self.bot.theta)])
+        return np.hstack([self.target_dir, self.bot.get_sensors_values()])#, to_radians(self.bot.getTheta())])
 
     def show_map (self, resolution_m_px=1):
         img = self.map_data.get_image(resolution_m_px)
 
-        if self.bot:
-            if self.bot_collision:
-                bot_clr = (255, 255, 0)
-            else:
-                bot_clr = (0, 255, 0)
 
-            cv2.circle(img, center=(int(self.bot.x / resolution_m_px), int(self.bot.y / resolution_m_px)), 
-                            radius=int(self.bot.r/resolution_m_px), 
-                            thickness=-1, color=bot_clr)
+        if self.bot_collision:
+            bot_clr = (255, 255, 0)
+        else:
+            bot_clr = (0, 255, 0)
 
-
-            dir_line = line_from_radial(base_point=self.bot.get_state_point(), theta=self.bot.theta)
-
-            cv2.line(img,   pt1=(int(dir_line.p0.x / resolution_m_px), int(dir_line.p0.y / resolution_m_px)),
-                            pt2=(int(dir_line.p1.x / resolution_m_px), int(dir_line.p1.y / resolution_m_px)),
-                            color=(0, 255, 0),
-                            thickness=1 )
-
-            for i, sonar in enumerate(self.bot.sensors):
-                sonar_x, sonar_y = sonar.base_x, sonar.base_y
-                cv2.circle(img, center=(int(sonar_x / resolution_m_px), int(sonar_y / resolution_m_px)), 
-                                radius=2, thickness=-1, color=(0, 0, 0))
-
-                dist_max = 4.5
-
-                for ray_value, ray_angle in zip(sonar.ray_values * dist_max, sonar.ray_angles):
-                    ray_line = line_from_radial(base_point=sonar.get_state_point(), length=ray_value, theta=sonar.base_theta + ray_angle)
-
-                    cv2.line(img,   pt1=(int(ray_line.p0.x / resolution_m_px), int(ray_line.p0.y / resolution_m_px)),
-                                    pt2=(int(ray_line.p1.x / resolution_m_px), int(ray_line.p1.y / resolution_m_px)),
-                                    color=(0, 0, 0),
-                                    thickness=1 )
-
-                range = sonar.range * dist_max
-                left_angle, right_angle = sonar.get_left_right_angles(self.bot.theta)
-
-                cv2.ellipse(img, center=(int(sonar_x / resolution_m_px), int(sonar_y / resolution_m_px)),
-                                 axes=(int(range / resolution_m_px), int(range / resolution_m_px)), angle=0, startAngle=right_angle, endAngle=left_angle, 
-                                 color=(100, 0, 0), thickness=3)
-
-            # cv2.circle(img, center=(int(self.bot.x / resolution_m_px), int(self.bot.y / resolution_m_px)), 
-                            # radius=2, thickness=-1, color=(255, 0, 0))
+        cv2.circle(img, center=(int(self.bot.getX() / resolution_m_px), int(self.bot.getY() / resolution_m_px)), 
+                        radius=int(self.bot.r/resolution_m_px), 
+                        thickness=-1, color=bot_clr)
 
 
-        if self.target:
-            target_vect = Point(self.target_dir[0], self.target_dir[1])
+        dir_line = line_from_radial(base_point=self.bot.get_state_point(), theta=self.bot.getTheta())
 
-            cv2.line(img,   pt1=(int(self.bot.x / resolution_m_px), int(self.bot.y / resolution_m_px)),
-                            pt2=(int((self.bot.x + target_vect.x) / resolution_m_px), int((self.bot.y + target_vect.y) / resolution_m_px)),
-                            color=(255, 0, 0), thickness=1 )
+        cv2.line(img,   pt1=(int(dir_line.p0.x / resolution_m_px), int(dir_line.p0.y / resolution_m_px)),
+                        pt2=(int(dir_line.p1.x / resolution_m_px), int(dir_line.p1.y / resolution_m_px)),
+                        color=(0, 255, 0),
+                        thickness=1 )
 
-            cv2.circle(img, center=(int(self.target.x / resolution_m_px), int(self.target.y / resolution_m_px)), 
-                            radius=max(int(self.target.r/resolution_m_px), 2), 
-                            thickness=-1, color=(255, 0, 0))
+        for i, sonar in enumerate(self.bot.sensors):
+            sonar_x, sonar_y = sonar.base_x, sonar.base_y
+            cv2.circle(img, center=(int(sonar_x / resolution_m_px), int(sonar_y / resolution_m_px)), 
+                            radius=2, thickness=-1, color=(0, 0, 0))
+
+            dist_max = 4.5
+
+            for ray_value, ray_angle in zip(sonar.ray_values * dist_max, sonar.ray_angles):
+                ray_line = line_from_radial(base_point=sonar.get_state_point(), length=ray_value, theta=sonar.base_theta + ray_angle)
+
+                cv2.line(img,   pt1=(int(ray_line.p0.x / resolution_m_px), int(ray_line.p0.y / resolution_m_px)),
+                                pt2=(int(ray_line.p1.x / resolution_m_px), int(ray_line.p1.y / resolution_m_px)),
+                                color=(0, 0, 0),
+                                thickness=1 )
+
+            range = sonar.range * dist_max
+            left_angle, right_angle = sonar.get_left_right_angles(self.bot.getTheta())
+
+            cv2.ellipse(img, center=(int(sonar_x / resolution_m_px), int(sonar_y / resolution_m_px)),
+                             axes=(int(range / resolution_m_px), int(range / resolution_m_px)), angle=0, startAngle=right_angle, endAngle=left_angle, 
+                             color=(100, 0, 0), thickness=3)
+
+        # cv2.circle(img, center=(int(self.bot.getX() / resolution_m_px), int(self.bot.getY() / resolution_m_px)), 
+                        # radius=2, thickness=-1, color=(255, 0, 0))
+
+        cv2.line(img,   pt1=(int(self.bot.getX() / resolution_m_px), int(self.bot.getY() / resolution_m_px)),
+                        pt2=(int((self.bot.getX() + self.target_dir[0]) / resolution_m_px), int((self.bot.getY() + self.target_dir[1]) / resolution_m_px)),
+                        color=(255, 0, 0), thickness=1 )
+
+        cv2.circle(img, center=(int(self.target[0] / resolution_m_px), int(self.target[1] / resolution_m_px)), 
+                        radius=3, thickness=-1, color=(255, 0, 0))
 
         for point in self.path:
             cv2.circle(img, center=(int(point[1] / resolution_m_px), int(point[2] / resolution_m_px)), 
@@ -324,18 +272,17 @@ class SimManager:
         else:
             return (0, 0, 0)
 
-
 if __name__ == '__main__':
     debug = True
     filename = '../maps/two_obstacles.pmap'
     filename = '../maps/maze.pmap'
     sim = SimManager(bot=Robot(x=2, y=10),
-                     target=CircleTarget(x=36, y=2),
+                     target=[36, 2],
                      map_data=get_map_from_file(filename))
 
     while True:
 
-        sim.show_map(resolution_m_px=0.02)
+        sim.show_map(resolution_m_px=0.03)
 
         inputs = sim.process_input()
 

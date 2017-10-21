@@ -46,7 +46,7 @@ while sim.t < simulation_seconds:
     sim.sample_step(action)
     if sim.bot_collision:
         print('Failed!')
-        exit(1)
+        break
 
 print('Result:', 100-sim.get_fitness())
 

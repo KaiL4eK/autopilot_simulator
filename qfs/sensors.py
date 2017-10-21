@@ -51,9 +51,12 @@ class SonarSensor(object):
     def get_state_point(self):
         return Point(self.base_x, self.base_y)
 
+    def np_get_state_point(self):
+        return np.array([self.base_x, self.base_y], dtype=np.float32)
+
     def update(self, lines):
         self.ray_values = np.ones(shape=(self.nrows), dtype=np.float32)
-        update_sonar(self.nrows, self.ray_angles, self.ray_values, lines, self.dist_max, self.get_state_point(), self.base_theta)
+        update_sonar(self.nrows, self.ray_angles, self.ray_values, lines, self.dist_max, self.np_get_state_point(), self.base_theta)
         self.range = self.ray_values.min()
 
 

@@ -1,3 +1,6 @@
+import timeit
+import textwrap
+
 import sys
 sys.path.append('../')
 
@@ -15,7 +18,7 @@ result_real_time = 0
 for i in range(check_count):
 
 	sim = SimManager(bot=Robot(x=2, y=10),
-                     target=CircleTarget(x=36, y=2),
+                     target=[36, 2],
 	                 map_data=sim_map)
 
 	start_time = time.time()

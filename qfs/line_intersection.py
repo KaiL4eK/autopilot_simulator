@@ -7,6 +7,15 @@ from qfs.common import *
 import time
 import timeit
 
+@nb.njit
+def testIntersection( l1, l2 ):
+    """ prints out a test for checking by hand... """
+    # print("Line segment #1 runs from", l1.p0, "to", l1.p1)
+    # print("Line segment #2 runs from", l2.p0, "to", l1.p1)
+
+    result = l1.intersect_line( l2 )
+    # print("    Intersection result =", result)
+    # print()
 
 if __name__ == "__main__":
 

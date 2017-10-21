@@ -2,7 +2,7 @@ import math as m
 import numba as nb
 import numpy as np
 
-@nb.njit
+@nb.njit(nb.float32(nb.float32))
 def to_radians(degree):
     if degree > 180:
         degree -= 360.
@@ -19,15 +19,21 @@ point_spec = [('x', nb.float32),
 class Point(object):
     def __init__(self, x, y):
         self.x = x
-        self.y = y
-
-    
+        self.y = y   
 
     # def __str__(self):
     #     return "(%s, %s)" % (self.x, self.y) 
 
 point_type = nb.deferred_type()
 point_type.define(Point.class_type.instance_type)
+
+################ Just for tests ######################
+@nb.njit(nb.float32(nb.float32[2], nb.float32[2]))
+def get_distance_to_4 (p1, p2):
+    dx = p1[0] - p2[0]
+    dy = p1[1] - p2[1]
+
+    return m.hypot(dx, dy)
 
 @nb.njit
 def get_distance_to (from_object, to_object):
@@ -37,13 +43,6 @@ def get_distance_to (from_object, to_object):
     return m.hypot(dx, dy)
 
 @nb.njit
-def get_distance_to_x10_incr (from_object, to_object):
-    dx = to_object.x - from_object.x
-    dy = to_object.y - from_object.y
-
-    return m.hypot(dx * 10, dy)
-
-@nb.njit
 def get_base_vectors_to (from_object, to_object):
     dx = to_object.x - from_object.x
     dy = to_object.y - from_object.y
@@ -51,6 +50,25 @@ def get_base_vectors_to (from_object, to_object):
     dist = m.hypot(dx, dy)
 
     return np.array([dx / dist, dy / dist], dtype=np.float32)
+################ ############## ######################
+
+@nb.njit(nb.float32(nb.float32[2], nb.float32[2]))
+def np_get_distance_to_x3_incr (p1, p2):
+    dx = p1[0] - p2[0]
+    dy = p1[1] - p2[1]
+
+    return m.hypot(dx * 3, dy)
+
+@nb.njit(nb.float32[2](nb.float32[2], nb.float32[2]))
+def np_get_base_vectors_to (p1, p2):
+    dx = p1[0] - p2[0]
+    dy = p1[1] - p2[1]
+    dist = m.hypot(dx, dy)
+    return np.array([dx / dist, dy / dist], dtype=np.float32)
+    
+    # dp = p1 - p2
+    # dist = m.hypot(dp[0], dp[1])
+    # return dp / dist
 
 
 line_spec = [('p0', point_type), 
@@ -70,7 +88,7 @@ class Line(object):
     def get_as_np_array_p0_p1(self):
         return np.array([self.p0.x, self.p0.y, self.p1.x, self.p1.y], dtype=np.float32)
 
-@nb.njit()
+@nb.njit(nb.float32(nb.float32[4], nb.float32[4]))
 def intersect_line_np( line_np, other_line_np ):
     
     line_d_x    = line_np[2]
@@ -84,12 +102,6 @@ def intersect_line_np( line_np, other_line_np ):
     other_line_p0_y = other_line_np[1]
 
     DET_TOLERANCE = 0.00000001
-    
-    # if np.array([self.p0.x, self.p1.x]).min() > np.array([other_line.p0.x, other_line.p1.x]).max() or \
-    #    np.array([self.p0.x, self.p1.x]).max() < np.array([other_line.p0.x, other_line.p1.x]).min() or \
-    #    np.array([self.p0.y, self.p1.y]).min() > np.array([other_line.p0.y, other_line.p1.y]).max() or \
-    #    np.array([self.p0.y, self.p1.y]).max() < np.array([other_line.p0.y, other_line.p1.y]).min():
-    #    return -1;
 
     DET = (-line_d_x * other_line_d_y + line_d_y * other_line_d_x)
 
@@ -109,10 +121,10 @@ def intersect_line_np( line_np, other_line_np ):
 # line_type = nb.deferred_type()
 # line_type.define(Line.class_type.instance_type)
 
-@nb.njit
+@nb.njit(nb.float32[4](nb.float32[2], nb.float32, nb.float32))
 def line_from_radial_np(base_point, theta, length=1.):
 
-    return np.array([base_point.x, base_point.y, length * m.cos(m.radians(theta)), length * m.sin(m.radians(theta))], dtype=np.float32)
+    return np.array([base_point[0], base_point[1], length * m.cos(m.radians(theta)), length * m.sin(m.radians(theta))], dtype=np.float32)
 
 @nb.njit
 def line_from_radial(base_point, theta, length=1.):
@@ -121,14 +133,3 @@ def line_from_radial(base_point, theta, length=1.):
     new_line.p1 = Point(new_line.p0.x + new_line.d.x, new_line.p0.y + new_line.d.y)
 
     return new_line
-
-@nb.njit
-def testIntersection( l1, l2 ):
-    """ prints out a test for checking by hand... """
-    # print("Line segment #1 runs from", l1.p0, "to", l1.p1)
-    # print("Line segment #2 runs from", l2.p0, "to", l1.p1)
-
-    result = l1.intersect_line( l2 )
-    # print("    Intersection result =", result)
-    # print()
-

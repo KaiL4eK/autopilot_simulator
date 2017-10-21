@@ -11,7 +11,7 @@ import cv2
 def clip(val, vmin, vmax):
     return max(vmin, min(val, vmax))
 
-@nb.njit
+@nb.njit()
 def check_collision_np (obstacle_points, map_size, bot_radius, bot_point):
     if  bot_point[0] - bot_radius <= 0 or \
         bot_point[1] - bot_radius <= 0 or \
