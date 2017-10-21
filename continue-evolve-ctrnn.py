@@ -13,7 +13,7 @@ import visualize
 
 from qfs.simulate_robot import *
 
-simulation_seconds = 500.0
+simulation_seconds = 100
 map_filename = 'maps/two_obstacles.pmap'
 map_filename = 'maps/maze.pmap'
 
@@ -110,8 +110,15 @@ if __name__ == '__main__':
         default=None,
         action="store",
         )
+    parser.add_argument(
+        "--simtime",
+        help="Simulation time",
+        default=100,
+        action="store",
+        )
 
 
     ns = parser.parse_args()
+    simulation_seconds = ns.int(simtime)
 
     run(ns.checkpoint, int(ns.pops))
