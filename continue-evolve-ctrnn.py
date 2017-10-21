@@ -56,7 +56,7 @@ def eval_genomes(genomes, config):
     cv2.imshow('1', cv2.flip(img, 0))
     cv2.waitKey(30)
 
-def run(filepath, pop_count):
+def run(filepath, pop_count, render_flag):
 
     if pop_count is not None:
         pop_count = int(pop_count)
@@ -73,11 +73,12 @@ def run(filepath, pop_count):
     pop.add_reporter(neat.StdOutReporter(True))
     pop.add_reporter(neat.Checkpointer(generation_interval=100, filename_prefix='checkpoints_ctrnn/chk_'))
 
-    if 1:
+    if render_flag:
+        winner = pop.run(eval_genomes, pop_count)
+    else:
         pe = neat.ParallelEvaluator(4, eval_genome)
         winner = pop.run(pe.evaluate, pop_count)
-    else:
-        winner = pop.run(eval_genomes, pop_count)
+
 
     # Save the winner.
     with open('winner-ctrnn', 'wb') as f:
@@ -119,6 +120,11 @@ if __name__ == '__main__':
         default=None,
         action="store",
         )
+    parser.add_argument(
+        "--render",
+        help="Simulation time",
+        action="store_true",
+        )
 
 
     ns = parser.parse_args()
@@ -127,4 +133,4 @@ if __name__ == '__main__':
 
     print('Simulation time:', simulation_seconds)
 
-    run(ns.checkpoint, ns.pops)
+    run(ns.checkpoint, ns.pops, ns.render)

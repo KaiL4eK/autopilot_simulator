@@ -134,7 +134,7 @@ class SimManager:
 
     time_step = bot_control_period_s
 
-    def __init__ (self, map_data, bot=None, target=None):
+    def __init__ (self, map_data, bot, target, save_path=True):
         self.bot = bot
         self.target = target
 
@@ -145,7 +145,10 @@ class SimManager:
         self.prev_control_upd_t = 0
         self.prev_sensors_upd_t = 0
 
+        self.save_path = save_path
         self.path = []
+
+        self.distances = []
         self.map_data = map_data
 
         self.target_dir = get_base_vectors_to(self.bot.get_state_point(), 
@@ -186,7 +189,10 @@ class SimManager:
         self.target_dir = get_base_vectors_to(self.bot.get_state_point(), 
                                               self.target.get_state_point())
 
-        self.path.append((self.t, self.bot.x, self.bot.y))
+        if self.save_path:
+            self.path.append((self.t, self.bot.x, self.bot.y))
+
+        self.distances.append(get_distance_to(self.bot.get_state_point(), self.target.get_state_point()))
 
         if debug:
             step_end = time.time()
@@ -204,21 +210,23 @@ class SimManager:
 
         return True
 
+    # Try to minimize this function
     def get_fitness (self): # X is increased ne negligate movement by Y
-        result = get_distance_to_x10_incr(self.bot.get_state_point(), 
-                                          self.target.get_state_point())
+        # result = get_distance_to_x10_incr(self.bot.get_state_point(), 
+                                          # self.target.get_state_point())
 
         # result = get_distance_to(self.bot.get_state_point(), 
                                  # self.target.get_state_point())        
 
-        if self.bot_collision:
-            result *= 5
+        result = np.mean(self.distances)
 
-        return result
+        if self.bot_collision:
+            result *= 2
+
+        return result 
 
     def get_state (self):
         return np.hstack([self.target_dir, self.bot.get_sensors_values()])#, to_radians(self.bot.theta)])
-
 
     def show_map (self, resolution_m_px=1):
         img = self.map_data.get_image(resolution_m_px)
