@@ -58,6 +58,9 @@ def eval_genomes(genomes, config):
 
 def run(filepath, pop_count):
 
+    if pop_count is not None:
+        pop_count = int(pop_count)
+
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, 'config-ctrnn')
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -100,7 +103,7 @@ def run(filepath, pop_count):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="NEAT xor experiment evaluated across multiple machines.")
     parser.add_argument(
-        "checkpoint",
+        "checkpoint",   
         help="path to checkpoint file",
         action="store",
         )
@@ -119,6 +122,8 @@ if __name__ == '__main__':
 
 
     ns = parser.parse_args()
-    simulation_seconds = ns.int(simtime)
+    simulation_seconds = int(ns.simtime)
 
-    run(ns.checkpoint, int(ns.pops))
+    print('Simulation time:', simulation_seconds)
+
+    run(ns.checkpoint, ns.pops)

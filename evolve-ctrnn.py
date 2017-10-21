@@ -12,7 +12,7 @@ import visualize
 
 from qfs.simulate_robot import *
 
-simulation_seconds = 100
+simulation_seconds = 400
 map_filename = 'maps/two_obstacles.pmap'
 map_filename = 'maps/maze.pmap'
 
