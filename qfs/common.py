@@ -12,6 +12,15 @@ def to_radians(degree):
 
     return m.radians(degree)
 
+@nb.njit(nb.float32(nb.float32))
+def degrees_2_degrees(degree):
+    if degree > 180:
+        degree -= 360.
+
+    if degree < -180:
+        degree += 360.
+
+    return degree
 
 point_spec = [('x', nb.float32), 
               ('y', nb.float32)]
