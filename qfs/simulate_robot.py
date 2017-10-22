@@ -29,6 +29,9 @@ class Robot(object):
         self.r      = 0.56
         
         self.initial_x = x
+        self.initial_y = y
+
+        self.initial_state = np.array([x, y], dtype=np.float32)
 
         self.air_resistance = np.array([0.25, 0.25, 0], dtype=np.float32)
         # self.force_rates = np.array([2 * 9.81, 2 * 9.81, 2 * 9.81 * 10], dtype=np.float32)
@@ -157,6 +160,12 @@ class SimManager:
 
         if debug:
             step_end = time.time()
+            away_rate = np_get_distance_to(self.bot.np_get_state_point(), self.bot.initial_state) / \
+                        np_get_distance_to(self.bot.initial_state, self.target)
+            trgt_rate = np_get_distance_to(self.bot.np_get_state_point(), self.target) / \
+                        np_get_distance_to(self.bot.initial_state, self.target)
+
+            print(away_rate, trgt_rate)
             print(sim.get_state())
             print(inputs)
             print(self.bot.speeds)
