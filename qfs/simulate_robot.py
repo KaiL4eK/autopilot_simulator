@@ -30,7 +30,7 @@ class Robot(object):
         
         self.initial_x = x
 
-        self.air_resistance = np.array([0.25, 0.25, 0.25], dtype=np.float32)
+        self.air_resistance = np.array([0.25, 0.25, 0], dtype=np.float32)
         self.force_rates = np.array([2 * 9.81, 2 * 9.81, 2 * 9.81 * 10], dtype=np.float32)
         self.forces = np.array([0., 0., 0.], dtype=np.float32)
         self.speeds = np.array([0., 0., 0.], dtype=np.float32)  # m / sec, m / sec, degree / sec
@@ -71,7 +71,7 @@ class Robot(object):
             sonar.update_base_point(self.getX(), self.getY(), self.getTheta())
             sonar.update(obstacles_lines)
 
-@nb.njit(nb.void(nb.float32, nb.float32[3], nb.float32[3], nb.float32[3]))
+@nb.njit(nb.void(nb.float32, nb.float32[3], nb.float32[3], nb.float32[3], nb.float32[3]))
 def update_state(dt, position, speed, force, air_resistance):
     # dt, x, y, th, ux, uy, wz
     t_cos = m.cos(m.radians(position[2]))
