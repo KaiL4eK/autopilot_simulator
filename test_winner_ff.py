@@ -29,11 +29,11 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
 net = neat.nn.FeedForwardNetwork.create(c, config)
 
 resol = 0.03
-simulation_seconds = 30
+simulation_seconds = 40
 
 img = sim_map.get_image(resol)
 sim = SimManager(bot=Robot(x=2, y=10, theta=0),
-                 target=CircleTarget(x=36, y=2),
+                 target=[36, 7.5],
                  map_data=sim_map)
 
 while sim.t < simulation_seconds:

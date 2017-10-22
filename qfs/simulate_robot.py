@@ -187,8 +187,8 @@ class SimManager:
         result = np.mean(self.distances) * \
                     (1 + m.fabs(self.target[0] - self.bot.getX()) / (self.target[0] - self.bot.initial_x))
 
-        if self.bot_collision:
-            result *= 2
+        # if self.bot_collision:
+            # result *= 2
 
         return result 
 

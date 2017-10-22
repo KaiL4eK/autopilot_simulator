@@ -1,8 +1,5 @@
-from __future__ import print_function
-
 import os
-import sys
-import getopt
+import argparse
 
 import pickle
 import time
@@ -10,53 +7,9 @@ import time
 import neat
 import visualize
 
-from qfs.simulate_robot import *
+from evaluate_ff import *
 
-populations = None
-
-simulation_seconds = 40.0
-map_filename = 'maps/two_obstacles.pmap'
-map_filename = 'maps/maze.pmap'
-
-resol = 0.03
-
-sim_map = get_map_from_file(map_filename)
-
-def eval_genome(genome, config, img=None):
-    net = neat.nn.FeedForwardNetwork.create(genome, config)
-
-    sim = SimManager(bot=Robot(x=2, y=10),
-                     target=CircleTarget(x=36, y=2),
-                     map_data=sim_map)
-
-    while sim.t < simulation_seconds:
-        inputs = sim.get_state()
-        action = net.activate(inputs)
-        sim.sample_step(action)
-        if sim.bot_collision:
-            break
-
-    if img is not None:
-        for point in sim.path:
-            time_rate = point[0] / simulation_seconds
-            cv2.circle(img, center=(int(point[1] / resol), int(point[2] / resol)), 
-                            radius=1, thickness=-1, 
-                            color=(255 - (255 * time_rate), 0, (255 * time_rate)))
-
-    return 100-sim.get_fitness()
-
-
-def eval_genomes(genomes, config):
-
-    img = sim_map.get_image(resol)
-
-    for genome_id, genome in genomes:
-        genome.fitness = eval_genome(genome, config, img)
-
-    cv2.imshow('1', cv2.flip(img, 0))
-    cv2.waitKey(30)
-
-def run():
+def run(render_flag):
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, 'config-feedforward')
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -69,11 +22,11 @@ def run():
     pop.add_reporter(neat.StdOutReporter(True))
     pop.add_reporter(neat.Checkpointer(generation_interval=100, filename_prefix='checkpoints_ff/chk_'))
 
-    if 1:
-        pe = neat.ParallelEvaluator(4, eval_genome)
-        winner = pop.run(pe.evaluate, populations)
+    if render_flag:
+        winner = pop.run(eval_genomes)
     else:
-        winner = pop.run(eval_genomes, populations)
+        pe = neat.ParallelEvaluator(4, eval_genome)
+        winner = pop.run(pe.evaluate)
 
     # Save the winner.
     with open('winner-ff', 'wb') as f:
@@ -97,4 +50,25 @@ def run():
     #                   filename="winner-feedforward-enabled-pruned.gv", show_disabled=False, prune_unused=True)
 
 if __name__ == '__main__':
-    run()
+    parser = argparse.ArgumentParser(description="Description")
+    parser.add_argument(
+        "--simtime",
+        help="Simulation time",
+        default=None,
+        action="store",
+        )
+    parser.add_argument(
+        "--render",
+        help="Simulation time",
+        action="store_true",
+        )
+
+
+    ns = parser.parse_args()
+    if ns.simtime is not None:
+        simulation_seconds = int(ns.simtime)
+
+    print('Simulation time:', simulation_seconds)
+
+    run(ns.render)
+
