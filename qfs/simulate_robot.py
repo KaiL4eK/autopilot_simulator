@@ -182,7 +182,7 @@ class SimManager:
 
 
     def get_state (self):
-        return np.hstack([self.target_dir, self.bot.get_sensors_values()])#, to_radians(self.bot.getTheta())])
+        return np.hstack([self.target_dir, self.bot.get_sensors_values(), self.bot.getTheta()/180.])
 
     def show_map (self, resolution_m_px=1):
         img = self.map_data.get_image(resolution_m_px)

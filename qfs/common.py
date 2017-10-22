@@ -54,15 +54,15 @@ def get_base_vectors_to (from_object, to_object):
 
 @nb.njit(nb.float32(nb.float32[2], nb.float32[2]))
 def np_get_distance_to_x3_incr (p1, p2):
-    dx = p1[0] - p2[0]
-    dy = p1[1] - p2[1]
+    dx = p2[0] - p1[0]
+    dy = p2[1] - p1[1]
 
     return m.hypot(dx * 3, dy)
 
 @nb.njit(nb.float32[2](nb.float32[2], nb.float32[2]))
 def np_get_base_vectors_to (p1, p2):
-    dx = p1[0] - p2[0]
-    dy = p1[1] - p2[1]
+    dx = p2[0] - p1[0]
+    dy = p2[1] - p1[1]
     dist = m.hypot(dx, dy)
     return np.array([dx / dist, dy / dist], dtype=np.float32)
     
