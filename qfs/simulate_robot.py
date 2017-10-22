@@ -30,6 +30,7 @@ class Robot(object):
         
         self.initial_x = x
 
+        self.air_resistance = np.array([0.25, 0.25, 0], dtype=np.float32)
         self.force_rates = np.array([2 * 9.81, 2 * 9.81, 2 * 9.81 * 10], dtype=np.float32)
         self.forces = np.array([0., 0., 0.], dtype=np.float32)
         self.speeds = np.array([0., 0., 0.], dtype=np.float32)  # m / sec, m / sec, degree / sec
@@ -51,7 +52,7 @@ class Robot(object):
         return self.state[0]
 
     def set_control_inputs(self, inputs):
-        self.forces = inputs * self.force_rates
+        self.forces = inputs * self.force_rates - self.speeds * self.air_resistance
 
     def get_sensors_values(self):
         return np.array([sensor.range for sensor in self.sensors]) 
@@ -157,6 +158,7 @@ class SimManager:
             step_end = time.time()
             print(sim.get_state())
             print(inputs)
+            print(self.bot.speeds)
             print("Bot position:", (self.bot.getX(), self.bot.getY(), self.bot.getTheta()))
             bot_state_calc_t = (sensors_start - step_start) * 1000
             sensors_calc_t   = (sensors_end - sensors_start) * 1000
