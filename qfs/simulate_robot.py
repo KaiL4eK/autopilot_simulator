@@ -30,7 +30,7 @@ class Robot(object):
         
         self.initial_x = x
 
-        self.air_resistance = np.array([0.25, 0.25, 0], dtype=np.float32)
+        self.air_resistance = np.array([0.25, 0.25, 0.25], dtype=np.float32)
         self.force_rates = np.array([2 * 9.81, 2 * 9.81, 2 * 9.81 * 10], dtype=np.float32)
         self.forces = np.array([0., 0., 0.], dtype=np.float32)
         self.speeds = np.array([0., 0., 0.], dtype=np.float32)  # m / sec, m / sec, degree / sec
@@ -52,7 +52,7 @@ class Robot(object):
         return self.state[0]
 
     def set_control_inputs(self, inputs):
-        self.forces = inputs * self.force_rates - self.speeds * self.air_resistance
+        self.forces = inputs * self.force_rates
 
     def get_sensors_values(self):
         return np.array([sensor.range for sensor in self.sensors]) 
@@ -64,7 +64,7 @@ class Robot(object):
         return self.state[0:2]
 
     def sample_step(self, dt):
-        update_state(dt, self.state, self.speeds, self.forces)
+        update_state(dt, self.state, self.speeds, self.forces, self.air_resistance)
 
     def proccess_sonar_sensors(self, obstacles_lines):
         for sonar in self.sensors:
@@ -72,16 +72,16 @@ class Robot(object):
             sonar.update(obstacles_lines)
 
 @nb.njit(nb.void(nb.float32, nb.float32[3], nb.float32[3], nb.float32[3]))
-def update_state(dt, position, speed, force):
+def update_state(dt, position, speed, force, air_resistance):
     # dt, x, y, th, ux, uy, wz
     t_cos = m.cos(m.radians(position[2]))
     t_sin = m.sin(m.radians(position[2]))
 
     # R     = np.matrix([[t_cos, -t_sin, 0], [t_sin, t_cos, 0], [0, 0, 1]], dtype=np.float32)
 
-    speed[0] += (force[0] * t_cos - force[1] * t_sin) * dt
-    speed[1] += (force[0] * t_sin + force[1] * t_cos) * dt
-    speed[2] += force[2] * dt
+    speed[0] += ((force[0] * t_cos - force[1] * t_sin) - speed[0] * air_resistance[0]) * dt
+    speed[1] += ((force[0] * t_sin + force[1] * t_cos) - speed[1] * air_resistance[1]) * dt
+    speed[2] += (force[2] - speed[2] * air_resistance[2]) * dt
 
     position[0] += speed[0] * dt
     position[1] += speed[1] * dt
