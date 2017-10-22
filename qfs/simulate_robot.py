@@ -184,8 +184,8 @@ class SimManager:
         return result 
 
 
-    def get_state (self):
-        return np.hstack([self.target_dir, self.bot.get_sensors_values(), degrees_2_degrees(self.bot.getTheta())/180.])
+    def get_state (self):   #, degrees_2_degrees(self.bot.getTheta())/180.
+        return np.hstack([self.target_dir, self.bot.get_sensors_values()])
 
     def show_map (self, resolution_m_px=1):
         img = self.map_data.get_image(resolution_m_px)

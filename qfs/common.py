@@ -117,8 +117,8 @@ def intersect_line_np( line_np, other_line_np ):
     if m.fabs(DET) < DET_TOLERANCE: 
         return -1.
 
-    dx = (other_line_p0_x-line_p0_x)
-    dy = (other_line_p0_y-line_p0_y)
+    dx = (other_line_p0_x - line_p0_x)
+    dy = (other_line_p0_y - line_p0_y)
     r = (-other_line_d_y  * dx + other_line_d_x * dy) / DET
     s = (-line_d_y        * dx + line_d_x       * dy) / DET
 
