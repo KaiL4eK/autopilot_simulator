@@ -31,7 +31,8 @@ class Robot(object):
         self.initial_x = x
 
         self.air_resistance = np.array([0.25, 0.25, 0], dtype=np.float32)
-        self.force_rates = np.array([2 * 9.81, 2 * 9.81, 2 * 9.81 * 10], dtype=np.float32)
+        # self.force_rates = np.array([2 * 9.81, 2 * 9.81, 2 * 9.81 * 10], dtype=np.float32)
+        self.force_rates = np.array([5 * 9.81, 5 * 9.81, 5 * 9.81 * 10], dtype=np.float32)
         self.forces = np.array([0., 0., 0.], dtype=np.float32)
         self.speeds = np.array([0., 0., 0.], dtype=np.float32)  # m / sec, m / sec, degree / sec
         self.state  = np.array([x, y, theta], dtype=np.float32)  # x, y, theta
