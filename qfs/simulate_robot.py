@@ -40,7 +40,7 @@ class Robot(object):
         sensors_shift = 0.2
         self.sensors = [SonarSensor(base_dist=sensors_shift, stheta=0),     # Front
                         SonarSensor(base_dist=sensors_shift, stheta=90),    # Left
-                        # SonarSensor(base_dist=sensors_shift, stheta=180),   # Rear
+                        SonarSensor(base_dist=sensors_shift, stheta=180),   # Rear
                         SonarSensor(base_dist=sensors_shift, stheta=-90)]   # Right
 
     def getTheta(self):
