@@ -24,18 +24,24 @@ from multiprocessing import Pool
 debug = False
 
 class Robot(object):
-    def __init__ (self, x, y, theta=0):
+    def __init__ (self, x, y, theta=0, speed_control=True):
 
         self.r      = 0.56
         
         self.initial_x = x
         self.initial_y = y
 
+        self.speed_control = speed_control
+
         self.initial_state = np.array([x, y], dtype=np.float32)
 
         self.air_resistance = np.array([0.25, 0.25, 0], dtype=np.float32)
+
         # self.force_rates = np.array([2 * 9.81, 2 * 9.81, 2 * 9.81 * 10], dtype=np.float32)
         self.force_rates = np.array([5 * 9.81, 5 * 9.81, 5 * 9.81 * 10], dtype=np.float32)
+
+        self.speed_rates = np.array([10, 10, 100], dtype=np.float32)
+
         self.forces = np.array([0., 0., 0.], dtype=np.float32)
         self.speeds = np.array([0., 0., 0.], dtype=np.float32)  # m / sec, m / sec, degree / sec
         self.state  = np.array([x, y, theta], dtype=np.float32)  # x, y, theta
@@ -56,7 +62,10 @@ class Robot(object):
         return self.state[0]
 
     def set_control_inputs(self, inputs):
-        self.forces = inputs * self.force_rates
+        if self.speed_control:
+            self.speeds = inputs * self.speed_rates
+        else:
+            self.forces = inputs * self.force_rates
 
     def get_sensors_values(self):
         return np.array([sensor.range for sensor in self.sensors]) 
@@ -68,7 +77,10 @@ class Robot(object):
         return self.state[0:2]
 
     def sample_step(self, dt):
-        update_state(dt, self.state, self.speeds, self.forces, self.air_resistance)
+        if self.speed_control:
+            update_state_speeds(dt, self.state, self.speeds)
+        else:
+            update_state_forces(dt, self.state, self.speeds, self.forces, self.air_resistance)
 
     def proccess_sonar_sensors(self, obstacles_lines):
         for sonar in self.sensors:
@@ -76,8 +88,7 @@ class Robot(object):
             sonar.update(obstacles_lines)
 
 @nb.njit(nb.void(nb.float32, nb.float32[3], nb.float32[3], nb.float32[3], nb.float32[3]))
-def update_state(dt, position, speed, force, air_resistance):
-    # dt, x, y, th, ux, uy, wz
+def update_state_forces(dt, position, speed, force, air_resistance):
     t_cos = m.cos(m.radians(position[2]))
     t_sin = m.sin(m.radians(position[2]))
 
@@ -91,10 +102,18 @@ def update_state(dt, position, speed, force, air_resistance):
     position[1] += speed[1] * dt
     position[2] += speed[2] * dt
 
+@nb.njit(nb.void(nb.float32, nb.float32[3], nb.float32[3]))
+def update_state_speeds(dt, position, speed):
+    t_cos = m.cos(m.radians(position[2]))
+    t_sin = m.sin(m.radians(position[2]))
+
+    position[0] += (speed[0] * t_cos - speed[1] * t_sin) * dt
+    position[1] += (speed[0] * t_sin + speed[1] * t_cos) * dt
+    position[2] += speed[2] * dt
 
 class SimManager:
-    bot_control_period_s    = 10/1000.
-    bot_sensors_period_s    = 20/1000. #25/1000.
+    bot_control_period_s    = 5/1000.
+    bot_sensors_period_s    = 25/1000.
 
     time_step = bot_control_period_s
 
