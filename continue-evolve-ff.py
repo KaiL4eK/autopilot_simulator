@@ -24,7 +24,7 @@ def run(filepath, pop_count, render_flag):
     stats = neat.StatisticsReporter()
     pop.add_reporter(stats)
     pop.add_reporter(neat.StdOutReporter(True))
-    pop.add_reporter(neat.Checkpointer(generation_interval=100, filename_prefix='checkpoints_ctrnn/chk_'))
+    pop.add_reporter(neat.Checkpointer(generation_interval=100, filename_prefix='checkpoints_ff/chk_'))
 
     if render_flag:
         winner = pop.run(eval_genomes, pop_count)
