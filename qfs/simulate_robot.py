@@ -93,8 +93,8 @@ def update_state(dt, position, speed, force, air_resistance):
 
 
 class SimManager:
-    bot_control_period_s    = 5/1000.
-    bot_sensors_period_s    = 25/1000.
+    bot_control_period_s    = 10/1000.
+    bot_sensors_period_s    = 20/1000. #25/1000.
 
     time_step = bot_control_period_s
 
@@ -183,14 +183,15 @@ class SimManager:
 
     # Try to minimize this function
     def get_fitness (self):
-    
-        result = np.mean(self.distances) * \
-                    (1 + m.fabs(self.target[0] - self.bot.getX()) / (self.target[0] - self.bot.initial_x))
+
+        result = np.mean(self.distances)
+		# * \
+                #(1 + m.fabs(self.target[0] - self.bot.getX()) / (self.target[0] - self.bot.initial_x))
 
         # if self.bot_collision:
             # result *= 2
 
-        return result 
+        return result
 
 
     def get_state (self):   #, degrees_2_degrees(self.bot.getTheta())/180.
