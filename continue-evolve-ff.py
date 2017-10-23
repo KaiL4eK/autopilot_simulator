@@ -15,7 +15,7 @@ def run(filepath, pop_count, render_flag):
         pop_count = int(pop_count)
 
     local_dir = os.path.dirname(__file__)
-    config_path = os.path.join(local_dir, 'config-ff')
+    config_path = os.path.join(local_dir, 'config-feedforward')
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_path)
