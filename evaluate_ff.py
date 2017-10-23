@@ -13,9 +13,9 @@ simulation_seconds = 400.0
 map_filename = 'maps/two_obstacles.pmap'
 map_filename = 'maps/maze.pmap'
 
-resol = 0.03
-
 sim_map = get_map_from_file(map_filename)
+
+resol = 0.03
 
 def eval_genome(genome, config, img=None):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
@@ -27,7 +27,7 @@ def eval_genome(genome, config, img=None):
     while sim.t < simulation_seconds:
         inputs = sim.get_state()
         action = net.activate(inputs)
-        sim.sample_step([action[0], action[1], 0])
+        sim.sample_step(action)
         if sim.bot_collision:
             break
 
@@ -50,6 +50,3 @@ def eval_genomes(genomes, config):
 
     cv2.imshow('1', cv2.flip(img, 0))
     cv2.waitKey(30)
-
-
-
