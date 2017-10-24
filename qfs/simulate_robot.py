@@ -46,9 +46,9 @@ class Robot(object):
 
         sensors_shift = 0.2
         self.sensors = [SonarSensor(base_dist=sensors_shift, stheta=0),     # Front
-                        SonarSensor(base_dist=sensors_shift, stheta=60),    # Left
-                        # SonarSensor(base_dist=sensors_shift, stheta=180),   # Rear
-                        SonarSensor(base_dist=sensors_shift, stheta=-60)]   # Right
+                        SonarSensor(base_dist=sensors_shift, stheta=90),    # Left
+                        SonarSensor(base_dist=sensors_shift, stheta=180),   # Rear
+                        SonarSensor(base_dist=sensors_shift, stheta=-90)]   # Right
 
     def reset_state(self):
         self.state = np.copy(self.initial_state)
@@ -230,8 +230,8 @@ class SimManager:
         return result
 
 
-    def get_state (self):
-        return np.hstack([self.target_dir, self.bot.get_sensors_values(), degrees_2_degrees(self.bot.getTheta())/180.])
+    def get_state (self):   # , degrees_2_degrees(self.bot.getTheta())/180.
+        return np.hstack([self.target_dir, self.bot.get_sensors_values()])
 
     def show_map (self, resolution_m_px=1):
         img = self.map_data.get_image(resolution_m_px)

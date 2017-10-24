@@ -33,7 +33,7 @@ def eval_genome(genome, config, imgs=None):
         while sim.t < simulation_seconds:
             inputs = sim.get_state()
             action = net.activate(inputs)
-            sim.sample_step(action)
+            sim.sample_step([action[0], action[1], 0])
             if sim.bot_collision:
                 break
 
