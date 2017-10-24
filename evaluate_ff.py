@@ -19,7 +19,7 @@ imgs = []
 
 resol = 0.04
 
-def eval_genome(genome, config, img=None):
+def eval_genome(genome, config, imgs=None):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
 
     simulations = [ SimManager(bot=Robot(x=3, y=8), target=[18, 2], map_data=sim_maps[0]),
