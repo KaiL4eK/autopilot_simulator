@@ -83,7 +83,7 @@ class SimMap(object):
 
     def get_image(self, resol_m_px):
         resol_m_px = float(resol_m_px)
-        img_width  = self.size[0]  / resol_m_px
+        img_width  = self.size[0] / resol_m_px
         img_height = self.size[1] / resol_m_px
 
         img = np.ones(shape=(int(img_height), int(img_width), 3), dtype=np.uint8) * 255

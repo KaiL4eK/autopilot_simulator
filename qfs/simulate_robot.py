@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import sys
 sys.path.append('../')
 
@@ -33,7 +31,7 @@ class Robot(object):
 
         self.speed_control = speed_control
 
-        self.initial_state = np.array([x, y], dtype=np.float32)
+        self.initial_state = np.array([x, y, theta], dtype=np.float32)
 
         self.air_resistance = np.array([0.25, 0.25, 0], dtype=np.float32)
 
@@ -51,6 +49,11 @@ class Robot(object):
                         SonarSensor(base_dist=sensors_shift, stheta=60),    # Left
                         # SonarSensor(base_dist=sensors_shift, stheta=180),   # Rear
                         SonarSensor(base_dist=sensors_shift, stheta=-60)]   # Right
+
+    def reset_state(self):
+        self.state = np.copy(self.initial_state)
+        self.forces = np.array([0., 0., 0.], dtype=np.float32)
+        self.speeds = np.array([0., 0., 0.], dtype=np.float32)  # m / sec, m / sec, degree / sec
 
     def getTheta(self):
         return self.state[2]
@@ -139,6 +142,19 @@ class SimManager:
 
         self.bot.proccess_sonar_sensors(self.map_data.get_obstacle_lines())
 
+    def reset(self):
+        self.bot.reset_state()
+        
+        self.t = 0
+        self.prev_control_upd_t = 0
+        self.prev_sensors_upd_t = 0
+        self.path = []
+        self.distances = []
+
+        self.target_dir = np_get_base_vectors_to(self.bot.np_get_state_point(), 
+                                                 self.target)
+
+        self.bot.proccess_sonar_sensors(self.map_data.get_obstacle_lines())
 
     def sample_step (self, inputs):
         if debug:
@@ -173,18 +189,17 @@ class SimManager:
 
         if self.save_path:
             self.path.append((self.t, self.bot.getX(), self.bot.getY()))
-
         self.distances.append(np_get_distance_to_x3_incr(self.bot.np_get_state_point(), 
                                                          self.target))
 
         if debug:
             step_end = time.time()
-            away_rate = np_get_distance_to(self.bot.np_get_state_point(), self.bot.initial_state) / \
-                        np_get_distance_to(self.bot.initial_state, self.target)
-            trgt_rate = np_get_distance_to(self.bot.np_get_state_point(), self.target) / \
-                        np_get_distance_to(self.bot.initial_state, self.target)
+            # away_rate = np_get_distance_to(self.bot.np_get_state_point(), self.bot.initial_state) / \
+            #             np_get_distance_to(self.bot.initial_state, self.target)
+            # trgt_rate = np_get_distance_to(self.bot.np_get_state_point(), self.target) / \
+            #             np_get_distance_to(self.bot.initial_state, self.target)
 
-            print(away_rate, trgt_rate)
+            # print(away_rate, trgt_rate)
             print(sim.get_state())
             print(inputs)
             print(self.bot.speeds)
@@ -204,8 +219,10 @@ class SimManager:
     def get_fitness (self):
 
         result = np.mean(self.distances)
-		# * \
-                #(1 + m.fabs(self.target[0] - self.bot.getX()) / (self.target[0] - self.bot.initial_x))
+
+        if np_get_distance_to(self.bot.np_get_state_point(), 
+                              self.target) < 0.1:
+            result -= 50
 
         # if self.bot_collision:
             # result *= 2
@@ -266,7 +283,7 @@ class SimManager:
                         color=(255, 0, 0), thickness=1 )
 
         cv2.circle(img, center=(int(self.target[0] / resolution_m_px), int(self.target[1] / resolution_m_px)), 
-                        radius=3, thickness=-1, color=(255, 0, 0))
+                        radius=5, thickness=-1, color=(255, 0, 0))
 
         for point in self.path:
             cv2.circle(img, center=(int(point[1] / resolution_m_px), int(point[2] / resolution_m_px)), 
@@ -308,10 +325,20 @@ class SimManager:
 
 if __name__ == '__main__':
     debug = True
-    filename = '../maps/two_obstacles.pmap'
+
     filename = '../maps/maze.pmap'
     sim = SimManager(bot=Robot(x=2, y=10),
                      target=[36, 2],
+                     map_data=get_map_from_file(filename))
+
+    filename = '../maps/second_map.pmap'
+    sim = SimManager(bot=Robot(x=2, y=17),
+                     target=[14, 15],
+                     map_data=get_map_from_file(filename))
+
+    filename = '../maps/two_obstacles.pmap'
+    sim = SimManager(bot=Robot(x=3, y=8),
+                     target=[18, 2],
                      map_data=get_map_from_file(filename))
 
     while True:

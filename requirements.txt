@@ -1,4 +1,5 @@
-python3-tk
+#python3-tk
+pygame
 numba
 jinja2
 pygame
