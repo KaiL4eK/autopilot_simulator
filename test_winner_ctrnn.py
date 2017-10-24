@@ -18,12 +18,9 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                      neat.DefaultSpeciesSet, neat.DefaultStagnation,
                      config_path)
 
-resol = 0.03
 simulation_seconds = 40
 
-img = sim_map.get_image(resol)
-
-eval_genome(c, config, img)
+eval_genomes([(0, c)], config, img)
 
 cv2.imshow('1', cv2.flip(img, 0))
 cv2.waitKey(0)
