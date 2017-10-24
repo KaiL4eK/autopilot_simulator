@@ -9,7 +9,7 @@ import cv2
 
 from qfs.simulate_robot import *
 
-simulation_seconds = 400
+simulation_seconds = 200
 
 sim_maps = [ get_map_from_file('maps/two_obstacles.pmap'),
              get_map_from_file('maps/maze.pmap'),
@@ -35,7 +35,7 @@ def eval_genome(genome, config, imgs=None):
         while sim.t < simulation_seconds:
             inputs = sim.get_state()
             action = net.advance(inputs, time_const, time_const)
-            sim.sample_step([action[0], action[1], 0])
+            sim.sample_step(inputs)
             if sim.bot_collision:
                 break
 
