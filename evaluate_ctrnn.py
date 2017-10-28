@@ -26,9 +26,11 @@ def eval_genome(genome, config, imgs=None):
                     SimManager(bot=Robot(x=2, y=10), target=[36, 2], map_data=sim_maps[1]),
                     SimManager(bot=Robot(x=2, y=17), target=[14, 15], map_data=sim_maps[2]) ]
 
-    sim_values = [0, 0, 0]
+    sim_values = []
 
-    for idx_sim, sim in enumerate(simulations):
+    # for idx_sim, sim in enumerate(simulations):
+    for idx_sim in range(1, 2):
+        sim = simulations[idx_sim]
 
         while sim.t < simulation_seconds:
             inputs = sim.get_state()
@@ -44,7 +46,7 @@ def eval_genome(genome, config, imgs=None):
                                 radius=1, thickness=-1, 
                                 color=(255 - (255 * time_rate), 0, (255 * time_rate)))
 
-        sim_values[idx_sim] = -sim.get_fitness()
+        sim_values.append(-sim.get_fitness())
 
     return np.mean(sim_values)
 
