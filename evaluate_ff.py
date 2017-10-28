@@ -15,8 +15,6 @@ sim_maps = [ get_map_from_file('maps/two_obstacles.pmap'),
              get_map_from_file('maps/maze.pmap'),
              get_map_from_file('maps/second_map.pmap') ]
 
-imgs = []
-
 resol = 0.04
 
 def eval_genome(genome, config, imgs=None):
@@ -46,7 +44,7 @@ def eval_genome(genome, config, imgs=None):
 
         sim_values[idx_sim] = -sim.get_fitness()
 
-    return min(sim_values)
+    return np.mean(sim_values)
 
 
 def eval_genomes(genomes, config):

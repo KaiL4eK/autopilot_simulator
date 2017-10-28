@@ -15,8 +15,6 @@ sim_maps = [ get_map_from_file('maps/two_obstacles.pmap'),
              get_map_from_file('maps/maze.pmap'),
              get_map_from_file('maps/second_map.pmap') ]
 
-imgs = []
-
 resol = 0.04
 time_const = SimManager.time_step
 
@@ -35,7 +33,7 @@ def eval_genome(genome, config, imgs=None):
         while sim.t < simulation_seconds:
             inputs = sim.get_state()
             action = net.advance(inputs, time_const, time_const)
-            sim.sample_step(action)
+            sim.sample_step([action[0], action[1], 0])
             if sim.bot_collision:
                 break
 
@@ -48,7 +46,7 @@ def eval_genome(genome, config, imgs=None):
 
         sim_values[idx_sim] = -sim.get_fitness()
 
-    return min(sim_values)
+    return np.mean(sim_values)
 
 def eval_genomes(genomes, config):
 
