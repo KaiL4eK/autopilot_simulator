@@ -5,11 +5,11 @@ from qfs.common import *
 
 import cv2
 
-# @nb.njit
+@nb.njit
 def clip(val, vmin, vmax):
     return max(vmin, min(val, vmax))
 
-# @nb.njit()
+@nb.njit()
 def check_collision_np (obstacle_points, map_size, bot_radius, bot_point):
     if  bot_point[0] - bot_radius <= 0 or \
         bot_point[1] - bot_radius <= 0 or \
@@ -17,8 +17,8 @@ def check_collision_np (obstacle_points, map_size, bot_radius, bot_point):
         bot_point[1] + bot_radius >= map_size[1]:
         return True
 
-    for i in range(obstacle_points.shape[0]):
-    # for i in nb.prange(obstacle_points.shape[0]):
+    # for i in range(obstacle_points.shape[0]):
+    for i in nb.prange(obstacle_points.shape[0]):
         # if type(obstacle) is RectObstacle:
         # https://stackoverflow.com/a/1879223
 

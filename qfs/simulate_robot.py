@@ -85,7 +85,7 @@ class Robot(object):
             sonar.update_base_point(self.getX(), self.getY(), self.getTheta())
             sonar.update(obstacles_lines)
 
-# @nb.njit(nb.void(nb.float32, nb.float32[3], nb.float32[3], nb.float32[3], nb.float32[3]))
+@nb.njit(nb.void(nb.float32, nb.float32[3], nb.float32[3], nb.float32[3], nb.float32[3]))
 def update_state_forces(dt, position, speed, force, air_resistance):
     t_cos = m.cos(m.radians(position[2]))
     t_sin = m.sin(m.radians(position[2]))
@@ -100,7 +100,7 @@ def update_state_forces(dt, position, speed, force, air_resistance):
     position[1] += speed[1] * dt
     position[2] += speed[2] * dt
 
-# @nb.njit(nb.void(nb.float32, nb.float32[3], nb.float32[3]))
+@nb.njit(nb.void(nb.float32, nb.float32[3], nb.float32[3]))
 def update_state_speeds(dt, position, speed):
     t_cos = m.cos(m.radians(position[2]))
     t_sin = m.sin(m.radians(position[2]))
@@ -327,15 +327,15 @@ if __name__ == '__main__':
                      target=[36, 2],
                      map_data=get_map_from_file(filename))
 
-    filename = '../maps/second_map.pmap'
-    sim = SimManager(bot=Robot(x=2, y=17),
-                     target=[14, 15],
-                     map_data=get_map_from_file(filename))
+    # filename = '../maps/second_map.pmap'
+    # sim = SimManager(bot=Robot(x=2, y=17),
+    #                  target=[14, 15],
+    #                  map_data=get_map_from_file(filename))
 
-    filename = '../maps/two_obstacles.pmap'
-    sim = SimManager(bot=Robot(x=3, y=8),
-                     target=[18, 2],
-                     map_data=get_map_from_file(filename))
+    # filename = '../maps/two_obstacles.pmap'
+    # sim = SimManager(bot=Robot(x=3, y=8),
+    #                  target=[18, 2],
+    #                  map_data=get_map_from_file(filename))
 
     while True:
 
