@@ -12,14 +12,21 @@ from qfs.simulate_robot import *
 simulation_seconds = 5
 
 sim_map = get_map_from_file('maps/two_obstacles.pmap')
-
 resol = 0.04
+
 
 def eval_genome(genome, config, img=None):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
 
+
     simulations = [ SimManager(bot=Robot(x=3, y=8), target=[18, 2], map_data=sim_map),
-                     ]
+                    SimManager(bot=Robot(x=3, y=8), target=[18, 7.5], map_data=sim_map), 
+                    SimManager(bot=Robot(x=3, y=8), target=[10, 2], map_data=sim_map),
+                    SimManager(bot=Robot(x=3, y=8), target=[10, 7.5], map_data=sim_map),
+                    SimManager(bot=Robot(x=18, y=2), target=[10, 2], map_data=sim_map),
+                    SimManager(bot=Robot(x=18, y=2), target=[3, 8], map_data=sim_map),
+                    SimManager(bot=Robot(x=18, y=2), target=[18, 7.5], map_data=sim_map),
+                    ]
 
     sim_values = []
 
@@ -46,15 +53,12 @@ def eval_genome(genome, config, img=None):
 
     return np.mean(sim_values)
 
-
 def eval_genomes(genomes, config):
 
     img = sim_map.get_image(resol)
 
     for genome_id, genome in genomes:
-        genome.fitness = eval_genome(genome, config, imgs)
+        genome.fitness = eval_genome(genome, config, img)
 
-    for i, img in enumerate(imgs):
-        cv2.imshow('0', cv2.flip(img, 0))
-
+    cv2.imshow('0', cv2.flip(img, 0))
     cv2.waitKey(30)

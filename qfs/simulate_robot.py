@@ -184,13 +184,14 @@ class SimManager:
 
         self.bot_collision = check_collision_np(self.map_data.get_obstacle_points(), self.map_data.size, self.bot.r, self.bot.np_get_state_point())
 
-        self.target_dir = np_get_base_vectors_to(self.bot.np_get_state_point(), 
-                                                 self.target)
-
         if self.save_path:
             self.path.append((self.t, self.bot.getX(), self.bot.getY()))
-        self.distances.append(np_get_distance_to_x2_incr(self.bot.np_get_state_point(), 
-                                                         self.target))
+
+        current_dist = np_get_distance_to(self.bot.np_get_state_point(), self.target)
+        self.distances.append(current_dist)
+
+        self.target_dir = np_get_base_vectors_to(self.bot.np_get_state_point(), 
+                                                 self.target)
 
         if debug:
             step_end = time.time()
@@ -221,8 +222,8 @@ class SimManager:
         result = np.mean(self.distances)
 
         if np_get_distance_to(self.bot.np_get_state_point(), 
-                              self.target) < 0.3:
-            result -= 50
+                              self.target) < 0.1:
+            result -= 10
 
         # if self.bot_collision:
             # result *= 2

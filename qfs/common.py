@@ -80,6 +80,9 @@ def np_get_base_vectors_to (p1, p2):
     dx = p2[0] - p1[0]
     dy = p2[1] - p1[1]
     dist = m.hypot(dx, dy)
+    if m.fabs(dist) < 0.0000001:
+        dist = 1
+
     return np.array([dx / dist, dy / dist], dtype=np.float32)
     
     # dp = p1 - p2

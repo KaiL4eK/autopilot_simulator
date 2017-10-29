@@ -9,12 +9,9 @@ import cv2
 
 from qfs.simulate_robot import *
 
-simulation_seconds = 50
+simulation_seconds = 5
 
-sim_maps = [ get_map_from_file('maps/two_obstacles.pmap'),
-             get_map_from_file('maps/maze.pmap'),
-             get_map_from_file('maps/second_map.pmap') ]
-
+sim_map = get_map_from_file('maps/two_obstacles.pmap')
 resol = 0.04
 time_const = SimManager.time_step
 
@@ -22,15 +19,18 @@ def eval_genome(genome, config, imgs=None):
     net = neat.ctrnn.CTRNN.create(genome, config, time_const)
     net.reset()
 
-    simulations = [ SimManager(bot=Robot(x=3, y=8), target=[18, 2], map_data=sim_maps[0]),
-                    SimManager(bot=Robot(x=2, y=10), target=[36, 2], map_data=sim_maps[1]),
-                    SimManager(bot=Robot(x=2, y=17), target=[14, 15], map_data=sim_maps[2]) ]
+    simulations = [ SimManager(bot=Robot(x=3, y=8), target=[18, 2], map_data=sim_map),
+                    SimManager(bot=Robot(x=3, y=8), target=[18, 7.5], map_data=sim_map), 
+                    SimManager(bot=Robot(x=3, y=8), target=[10, 2], map_data=sim_map),
+                    SimManager(bot=Robot(x=3, y=8), target=[10, 7.5], map_data=sim_map),
+                    SimManager(bot=Robot(x=18, y=2), target=[10, 2], map_data=sim_map),
+                    SimManager(bot=Robot(x=18, y=2), target=[3, 8], map_data=sim_map),
+                    SimManager(bot=Robot(x=18, y=2), target=[18, 7.5], map_data=sim_map),
+                    ]
 
     sim_values = []
 
-    # for idx_sim, sim in enumerate(simulations):
-    for idx_sim in range(0, 2):
-        sim = simulations[idx_sim]
+    for idx_sim, sim in enumerate(simulations):
 
         while sim.t < simulation_seconds:
             inputs = sim.get_state()
@@ -39,29 +39,26 @@ def eval_genome(genome, config, imgs=None):
             if sim.bot_collision:
                 break
 
-        if imgs is not None:
+        if img is not None:
             for point in sim.path:
                 time_rate = point[0] / simulation_seconds
-                cv2.circle(imgs[idx_sim], center=(int(point[1] / resol), int(point[2] / resol)), 
+                cv2.circle(img, center=(int(point[1] / resol), int(point[2] / resol)), 
                                 radius=1, thickness=-1, 
                                 color=(255 - (255 * time_rate), 0, (255 * time_rate)))
-
+            cv2.circle(img, center=(int(sim.target[0] / resol), int(sim.target[1] / resol)), 
+                radius=3, thickness=-1, 
+                color=(0, 0, 0))
+            
         sim_values.append(-sim.get_fitness())
 
     return np.mean(sim_values)
 
 def eval_genomes(genomes, config):
 
-    imgs = [ sim_maps[0].get_image(resol),
-             sim_maps[1].get_image(resol),
-             sim_maps[2].get_image(resol) ]
+    img = sim_map.get_image(resol)
 
     for genome_id, genome in genomes:
-        genome.fitness = eval_genome(genome, config, imgs)
+        genome.fitness = eval_genome(genome, config, img)
 
-    for i, img in enumerate(imgs):
-        cv2.imshow(str(i), cv2.flip(img, 0))
-
+    cv2.imshow('0', cv2.flip(img, 0))
     cv2.waitKey(30)
-
-
