@@ -9,7 +9,7 @@ import cv2
 
 from qfs.simulate_robot import *
 
-simulation_seconds = 200
+simulation_seconds = 50
 
 sim_maps = [ get_map_from_file('maps/two_obstacles.pmap'),
              get_map_from_file('maps/maze.pmap'),
@@ -29,7 +29,7 @@ def eval_genome(genome, config, imgs=None):
     sim_values = []
 
     # for idx_sim, sim in enumerate(simulations):
-    for idx_sim in range(1, 2):
+    for idx_sim in range(1, 3):
         sim = simulations[idx_sim]
 
         while sim.t < simulation_seconds:

@@ -18,9 +18,8 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                      neat.DefaultSpeciesSet, neat.DefaultStagnation,
                      config_path)
 
-simulation_seconds = 40
+simulation_seconds = 30
 
-eval_genomes([(0, c)], config, img)
+eval_genomes([(0, c)], config)
 
-cv2.imshow('1', cv2.flip(img, 0))
 cv2.waitKey(0)
