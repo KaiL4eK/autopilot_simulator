@@ -15,7 +15,7 @@ sim_map = get_map_from_file('maps/two_obstacles.pmap')
 resol = 0.04
 time_const = SimManager.time_step
 
-def eval_genome(genome, config, imgs=None):
+def eval_genome(genome, config, img=None):
     net = neat.ctrnn.CTRNN.create(genome, config, time_const)
     net.reset()
 
@@ -48,7 +48,7 @@ def eval_genome(genome, config, imgs=None):
             cv2.circle(img, center=(int(sim.target[0] / resol), int(sim.target[1] / resol)), 
                 radius=3, thickness=-1, 
                 color=(0, 0, 0))
-            
+
         sim_values.append(-sim.get_fitness())
 
     return np.mean(sim_values)
