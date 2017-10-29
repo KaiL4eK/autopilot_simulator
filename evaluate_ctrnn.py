@@ -29,7 +29,7 @@ def eval_genome(genome, config, imgs=None):
     sim_values = []
 
     # for idx_sim, sim in enumerate(simulations):
-    for idx_sim in range(1, 3):
+    for idx_sim in range(0, 2):
         sim = simulations[idx_sim]
 
         while sim.t < simulation_seconds:
