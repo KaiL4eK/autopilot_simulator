@@ -2,11 +2,6 @@ import sys
 sys.path.append('../')
 
 import time
-import cv2
-import numpy as np
-import numba as nb
-import math as m
-from qfs.common import *
 from qfs.sim_map import *
 from qfs.sensors import *
 
@@ -90,7 +85,7 @@ class Robot(object):
             sonar.update_base_point(self.getX(), self.getY(), self.getTheta())
             sonar.update(obstacles_lines)
 
-@nb.njit(nb.void(nb.float32, nb.float32[3], nb.float32[3], nb.float32[3], nb.float32[3]))
+# @nb.njit(nb.void(nb.float32, nb.float32[3], nb.float32[3], nb.float32[3], nb.float32[3]))
 def update_state_forces(dt, position, speed, force, air_resistance):
     t_cos = m.cos(m.radians(position[2]))
     t_sin = m.sin(m.radians(position[2]))
@@ -105,7 +100,7 @@ def update_state_forces(dt, position, speed, force, air_resistance):
     position[1] += speed[1] * dt
     position[2] += speed[2] * dt
 
-@nb.njit(nb.void(nb.float32, nb.float32[3], nb.float32[3]))
+# @nb.njit(nb.void(nb.float32, nb.float32[3], nb.float32[3]))
 def update_state_speeds(dt, position, speed):
     t_cos = m.cos(m.radians(position[2]))
     t_sin = m.sin(m.radians(position[2]))

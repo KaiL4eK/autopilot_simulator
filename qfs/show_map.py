@@ -6,8 +6,6 @@ from qfs.sim_map import *
 # import pygame
 # pygame.init()
 
-import numpy as np
-import cv2
 import sys
 
 if len(sys.argv) != 2:
