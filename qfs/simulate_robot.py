@@ -189,8 +189,7 @@ class SimManager:
 
         if self.save_path:
             self.path.append((self.t, self.bot.getX(), self.bot.getY()))
-        self.distances.append(np_get_distance_to_x3_incr(self.bot.np_get_state_point(), 
-                                                         self.target))
+        self.distances.append(np_get_distance_to(self.bot.np_get_state_point(), self.target))
 
         if debug:
             step_end = time.time()
