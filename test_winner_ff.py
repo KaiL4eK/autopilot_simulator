@@ -3,14 +3,16 @@ from __future__ import print_function
 import os
 import pickle
 
-from evaluate_ff import *
+import time
+
+import neat
+import cv2
+
+from qfs.simulate_robot import *
 
 # load the winner
 with open('winner-ff', 'rb') as f:
     c = pickle.load(f)
-
-# print('Loaded genome:')
-# print(c)
 
 local_dir = os.path.dirname(__file__)
 config_path = os.path.join(local_dir, 'config-feedforward')
@@ -18,8 +20,33 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                      neat.DefaultSpeciesSet, neat.DefaultStagnation,
                      config_path)
 
-simulation_seconds = 30
+simulation_seconds = 10
+resol = 0.04
 
-eval_genomes([(0, c)], config)
+sim_map = get_map_from_file('maps/maze.pmap')
+img = sim_map.get_image(resol)
 
+net = neat.nn.FeedForwardNetwork.create(c, config)
+
+sim = SimManager(bot=Robot(x=2, y=10), target=[36, 10], map_data=sim_map)
+
+while sim.t < simulation_seconds:
+    inputs = sim.get_state()
+    action = net.activate(inputs)
+    sim.sample_step([action[0], action[1], 0])
+    if sim.bot_collision:
+        print('Failed!')
+        break
+
+for point in sim.path:
+    time_rate = point[0] / simulation_seconds
+    cv2.circle(img, center=(int(point[1] / resol), int(point[2] / resol)), 
+                    radius=1, thickness=-1, 
+                    color=(255 - (255 * time_rate), 0, (255 * time_rate)))
+cv2.circle(img, center=(int(sim.target[0] / resol), int(sim.target[1] / resol)), 
+                radius=3, thickness=-1, 
+                color=(0, 0, 0))
+
+
+cv2.imshow('0', cv2.flip(img, 0))
 cv2.waitKey(0)

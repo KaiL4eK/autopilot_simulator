@@ -39,7 +39,7 @@ def run(render_flag):
     visualize.plot_stats(stats, view=False, ylog=True, filename="pictures_ff/feedforward-fitness.svg")
     visualize.plot_species(stats, view=False, filename="pictures_ff/feedforward-speciation.svg")
 
-    node_names = {-1: 'ext', -2: 'eyt', -3: 'sf', -4: 'sl', -5: 'sr', 0: 'ux', 1: 'uy', 2: 'wz'}
+    node_names = {-1: 'ext', -2: 'eyt', -3: 'sf', -4: 'sl', -5: 'sr', -6: 'sb', 0: 'ux', 1: 'uy'}
     visualize.draw_net(config, winner, False, node_names=node_names,
                        filename='pictures_ff/Digraph.gv')
     visualize.draw_net(config, winner, view=False, node_names=node_names,
