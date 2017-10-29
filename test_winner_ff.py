@@ -20,15 +20,20 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                      neat.DefaultSpeciesSet, neat.DefaultStagnation,
                      config_path)
 
-simulation_seconds = 10
+simulation_seconds = 5
 resol = 0.04
 
 sim_map = get_map_from_file('maps/maze.pmap')
+sim = SimManager(bot=Robot(x=2, y=10), target=[36, 10], map_data=sim_map)
+
+sim_map = get_map_from_file('maps/two_obstacles.pmap')
+sim = SimManager(bot=Robot(x=3, y=8), target=[18, 7.5], map_data=sim_map)
+sim = SimManager(bot=Robot(x=3, y=8), target=[10, 2], map_data=sim_map)
+sim = SimManager(bot=Robot(x=18, y=2), target=[3, 8], map_data=sim_map)
+
 img = sim_map.get_image(resol)
 
 net = neat.nn.FeedForwardNetwork.create(c, config)
-
-sim = SimManager(bot=Robot(x=2, y=10), target=[36, 10], map_data=sim_map)
 
 while sim.t < simulation_seconds:
     inputs = sim.get_state()

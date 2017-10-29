@@ -182,7 +182,7 @@ class SimManager:
         if self.save_path:
             self.path.append((self.t, self.bot.getX(), self.bot.getY()))
 
-        current_dist = np_get_distance_to(self.bot.np_get_state_point(), self.target)
+        current_dist = np_get_distance_to_x2_incr(self.bot.np_get_state_point(), self.target)
         self.distances.append(current_dist)
 
         self.target_dir = np_get_base_vectors_to(self.bot.np_get_state_point(), 
@@ -327,15 +327,15 @@ if __name__ == '__main__':
                      target=[36, 2],
                      map_data=get_map_from_file(filename))
 
-    # filename = '../maps/second_map.pmap'
-    # sim = SimManager(bot=Robot(x=2, y=17),
-    #                  target=[14, 15],
-    #                  map_data=get_map_from_file(filename))
+    filename = '../maps/second_map.pmap'
+    sim = SimManager(bot=Robot(x=2, y=17),
+                     target=[14, 15],
+                     map_data=get_map_from_file(filename))
 
-    # filename = '../maps/two_obstacles.pmap'
-    # sim = SimManager(bot=Robot(x=3, y=8),
-    #                  target=[18, 2],
-    #                  map_data=get_map_from_file(filename))
+    filename = '../maps/two_obstacles.pmap'
+    sim = SimManager(bot=Robot(x=3, y=8),
+                     target=[18, 2],
+                     map_data=get_map_from_file(filename))
 
     while True:
 
