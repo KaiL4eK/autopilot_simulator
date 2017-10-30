@@ -9,10 +9,10 @@ import cv2
 
 from qfs.simulate_robot import *
 
-simulation_seconds = 10
+simulation_seconds = 5
 
 sim_map = get_map_from_file('maps/two_obstacles.pmap')
-sim_map = get_map_from_file('maps/maze.pmap')
+# sim_map = get_map_from_file('maps/maze.pmap')
 
 resol = 0.04
 time_const = SimManager.time_step
@@ -21,19 +21,19 @@ def eval_genome(genome, config, img=None):
     net = neat.ctrnn.CTRNN.create(genome, config, time_const)
     net.reset()
 
-    # simulations = [ SimManager(bot=Robot(x=3, y=8), target=[18, 2], map_data=sim_map),
-    #                 SimManager(bot=Robot(x=3, y=8), target=[18, 7.5], map_data=sim_map), 
-    #                 SimManager(bot=Robot(x=3, y=8), target=[10, 2], map_data=sim_map),
-    #                 SimManager(bot=Robot(x=3, y=8), target=[10, 7.5], map_data=sim_map),
-    #                 SimManager(bot=Robot(x=18, y=2), target=[10, 2], map_data=sim_map),
-    #                 SimManager(bot=Robot(x=18, y=2), target=[3, 8], map_data=sim_map),
-    #                 SimManager(bot=Robot(x=18, y=2), target=[18, 7.5], map_data=sim_map),
-    #                 ]
-
-    simulations = [ SimManager(bot=Robot(x=2, y=10), target=[36, 2], map_data=sim_map),
-                    # SimManager(bot=Robot(x=2, y=10), target=[36, 12], map_data=sim_map),
-                    # SimManager(bot=Robot(x=2, y=10), target=[20, 2], map_data=sim_map),
+    simulations = [ SimManager(bot=Robot(x=3, y=8), target=[18, 2], map_data=sim_map),
+                    # SimManager(bot=Robot(x=3, y=8), target=[18, 7.5], map_data=sim_map), 
+                    # SimManager(bot=Robot(x=3, y=8), target=[10, 2], map_data=sim_map),
+                    # SimManager(bot=Robot(x=3, y=8), target=[10, 7.5], map_data=sim_map),
+                    # SimManager(bot=Robot(x=18, y=2), target=[10, 2], map_data=sim_map),
+                    # SimManager(bot=Robot(x=18, y=2), target=[3, 8], map_data=sim_map),
+                    # SimManager(bot=Robot(x=18, y=2), target=[18, 7.5], map_data=sim_map),
                     ]
+
+    # simulations = [ SimManager(bot=Robot(x=2, y=10), target=[36, 2], map_data=sim_map),
+    #                 # SimManager(bot=Robot(x=2, y=10), target=[36, 12], map_data=sim_map),
+    #                 # SimManager(bot=Robot(x=2, y=10), target=[20, 2], map_data=sim_map),
+    #                 ]
 
     sim_values = []
 
