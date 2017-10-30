@@ -22,7 +22,7 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
 
 simulation_seconds = 10
 resol = 0.04
-
+time_const = SimManager.time_step
 # sim_map = get_map_from_file('maps/maze.pmap')
 # sim = SimManager(bot=Robot(x=2, y=10), target=[36, 12], map_data=sim_map)
 
@@ -33,7 +33,7 @@ sim = SimManager(bot=Robot(x=3, y=8), target=[18, 7.5], map_data=sim_map)
 
 img = sim_map.get_image(resol)
 
-net = neat.ctrnn.CTRNN.create(genome, config, time_const)
+net = neat.ctrnn.CTRNN.create(c, config, time_const)
 net.reset()
 while sim.t < simulation_seconds:
     inputs = sim.get_state()

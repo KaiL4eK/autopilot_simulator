@@ -22,7 +22,7 @@ def eval_genome(genome, config, img=None):
     net.reset()
 
     simulations = [ SimManager(bot=Robot(x=3, y=8), target=[18, 2], map_data=sim_map),
-                    # SimManager(bot=Robot(x=3, y=8), target=[18, 7.5], map_data=sim_map), 
+                    SimManager(bot=Robot(x=3, y=8), target=[18, 7.5], map_data=sim_map), 
                     # SimManager(bot=Robot(x=3, y=8), target=[10, 2], map_data=sim_map),
                     # SimManager(bot=Robot(x=3, y=8), target=[10, 7.5], map_data=sim_map),
                     # SimManager(bot=Robot(x=18, y=2), target=[10, 2], map_data=sim_map),
