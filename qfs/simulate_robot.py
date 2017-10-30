@@ -333,10 +333,9 @@ if __name__ == '__main__':
                      map_data=get_map_from_file(filename))
 
     filename = '../maps/two_obstacles.pmap'
-    sim = SimManager(bot=Robot(x=3, y=8),
-                     target=[18, 2],
-                     map_data=get_map_from_file(filename))
-
+    sim = SimManager(bot=Robot(x=3, y=8), target=[18, 2], map_data=get_map_from_file(filename))
+    sim = SimManager(bot=Robot(x=18, y=2), target=[3, 8], map_data=get_map_from_file(filename))
+    
     while True:
 
         sim.show_map(resolution_m_px=0.03)

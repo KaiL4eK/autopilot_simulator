@@ -23,7 +23,7 @@ class SonarSensor(object):
         self.dist_max = 4.5
         self.dist_min = 0.02
 
-        self.nrows      = int(self.angle / 1 + 1)
+        self.nrows      = int(self.angle / 2 + 1)
         self.ray_angles = np.zeros(shape=(self.nrows), dtype=np.float32)
 
         for i in nb.prange(self.nrows):
