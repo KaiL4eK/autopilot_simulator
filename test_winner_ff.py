@@ -52,6 +52,5 @@ cv2.circle(img, center=(int(sim.target[0] / resol), int(sim.target[1] / resol)),
                 radius=3, thickness=-1, 
                 color=(0, 0, 0))
 
-
 cv2.imshow('0', cv2.flip(img, 0))
 cv2.waitKey(0)
