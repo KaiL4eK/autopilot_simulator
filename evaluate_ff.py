@@ -31,7 +31,7 @@ def eval_genome(genome, config, img=None):
     #                 ]
 
     simulations = [ SimManager(bot=Robot(x=2, y=10), target=[36, 2], map_data=sim_map),
-                    # SimManager(bot=Robot(x=2, y=10), target=[36, 12], map_data=sim_map),
+                    SimManager(bot=Robot(x=2, y=10), target=[36, 12], map_data=sim_map),
                     # SimManager(bot=Robot(x=2, y=10), target=[20, 2], map_data=sim_map),
                     ]
 
