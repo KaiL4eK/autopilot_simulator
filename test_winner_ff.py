@@ -20,7 +20,7 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                      neat.DefaultSpeciesSet, neat.DefaultStagnation,
                      config_path)
 
-simulation_seconds = 5
+simulation_seconds = 10
 resol = 0.04
 
 sim_map = get_map_from_file('maps/maze.pmap')
