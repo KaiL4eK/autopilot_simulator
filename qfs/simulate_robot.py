@@ -111,7 +111,7 @@ def update_state_speeds(dt, position, speed):
 
 class SimManager:
     bot_control_period_s    = 5/1000.
-    bot_sensors_period_s    = 25/1000.
+    bot_sensors_period_s    = 5/1000.# 25/1000.
 
     time_step = bot_control_period_s
 
