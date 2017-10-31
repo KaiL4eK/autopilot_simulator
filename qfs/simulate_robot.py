@@ -218,7 +218,7 @@ class SimManager:
 
         if np_get_distance_to(self.bot.np_get_state_point(), 
                               self.target) < 0.1:
-            result -= 10
+            result -= 50
 
         # if self.bot_collision:
             # result *= 2
