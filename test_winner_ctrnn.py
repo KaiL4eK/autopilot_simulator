@@ -27,7 +27,7 @@ time_const = SimManager.time_step
 # sim = SimManager(bot=Robot(x=2, y=10), target=[36, 12], map_data=sim_map)
 
 sim_map = get_map_from_file('maps/two_obstacles.pmap')
-sim = SimManager(bot=Robot(x=3, y=8), target=[18, 7.5], map_data=sim_map)
+sim = SimManager(bot=Robot(x=3, y=8), target=[11, 7.5], map_data=sim_map)
 # sim = SimManager(bot=Robot(x=3, y=8), target=[10, 2], map_data=sim_map)
 # sim = SimManager(bot=Robot(x=18, y=2), target=[3, 8], map_data=sim_map)
 
