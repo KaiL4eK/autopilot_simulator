@@ -59,7 +59,7 @@ def eval_genome(genome, config, img=None):
 
         sim_values.append(-sim.get_fitness())
         fitness += -sim.get_fitness()
-        if sim.bot_collision:
+        if sim.bot_collision or fitness < 0:
             break
 
     # return np.min(sim_values)
