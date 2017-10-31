@@ -21,8 +21,8 @@ def eval_genome(genome, config, img=None):
     net = neat.ctrnn.CTRNN.create(genome, config, time_const)
     net.reset()
 
-    simulations = [ SimManager(bot=Robot(x=3, y=8), target=[18, 2], map_data=sim_map),
-                    SimManager(bot=Robot(x=3, y=8), target=[11, 7.5], map_data=sim_map), 
+    simulations = [ SimManager(bot=Robot(x=3, y=8), target=[11, 7.5], map_data=sim_map), 
+                    SimManager(bot=Robot(x=3, y=8), target=[18, 2], map_data=sim_map),
                     # SimManager(bot=Robot(x=3, y=8), target=[10, 2], map_data=sim_map),
                     # SimManager(bot=Robot(x=3, y=8), target=[10, 7.5], map_data=sim_map),
                     # SimManager(bot=Robot(x=18, y=2), target=[10, 2], map_data=sim_map),
@@ -35,6 +35,7 @@ def eval_genome(genome, config, img=None):
     #                 # SimManager(bot=Robot(x=2, y=10), target=[20, 2], map_data=sim_map),
     #                 ]
 
+    fitness = 0
     sim_values = []
 
     for idx_sim, sim in enumerate(simulations):
@@ -57,8 +58,12 @@ def eval_genome(genome, config, img=None):
                 color=(0, 0, 0))
 
         sim_values.append(-sim.get_fitness())
+        fitness += -sim.get_fitness()
+        if sim.bot_collision:
+            break
 
-    return np.min(sim_values)
+    # return np.min(sim_values)
+    return fitness
 
 def eval_genomes(genomes, config):
 
