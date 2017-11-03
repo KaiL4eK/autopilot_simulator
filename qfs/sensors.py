@@ -1,4 +1,5 @@
 from qfs.common import *
+import random
 
 sonar_spec = [('base_dist', nb.float32), 
               ('stheta', nb.float32),
@@ -58,6 +59,8 @@ class SonarSensor(object):
         update_sonar(self.nrows, self.ray_angles, self.ray_values, lines, self.dist_max, self.np_get_state_point(), self.base_theta)
         self.range = self.ray_values.min()
 
+        # rand_range = 0.08
+        # self.range = self.range * random.uniform(1. - rand_range, 1. + rand_range)
 
 @nb.njit()
 def update_sonar(nrows, ray_angles, ray_values, lines, dist_max, base_point, base_theta):

@@ -23,34 +23,38 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
 simulation_seconds = 10
 resol = 0.04
 time_const = SimManager.time_step
-# sim_map = get_map_from_file('maps/maze.pmap')
-# sim = SimManager(bot=Robot(x=2, y=10), target=[36, 12], map_data=sim_map)
+sim_map = get_map_from_file('maps/maze.pmap')
+sim = SimManager(bot=Robot(x=2, y=10), target=[36, 12], map_data=sim_map)
 
 sim_map = get_map_from_file('maps/two_obstacles.pmap')
-sim = SimManager(bot=Robot(x=3, y=8), target=[11, 7.5], map_data=sim_map)
-# sim = SimManager(bot=Robot(x=3, y=8), target=[10, 2], map_data=sim_map)
-# sim = SimManager(bot=Robot(x=18, y=2), target=[3, 8], map_data=sim_map)
-
 img = sim_map.get_image(resol)
-
 net = neat.ctrnn.CTRNN.create(c, config, time_const)
-net.reset()
-while sim.t < simulation_seconds:
-    inputs = sim.get_state()
-    action = net.advance(inputs, time_const, time_const)
-    sim.sample_step([action[0], action[1], 0])
-    if sim.bot_collision:
-        print('Failed!')
-        break
 
-for point in sim.path:
-    time_rate = point[0] / simulation_seconds
-    cv2.circle(img, center=(int(point[1] / resol), int(point[2] / resol)), 
-                    radius=1, thickness=-1, 
-                    color=(255 - (255 * time_rate), 0, (255 * time_rate)))
-cv2.circle(img, center=(int(sim.target[0] / resol), int(sim.target[1] / resol)), 
-			    radius=3, thickness=-1, 
-			    color=(0, 0, 0))
+for i in range(10):
+    sim = SimManager(bot=Robot(x=3, y=8), target=[18, 2.5], map_data=sim_map)
+    # sim = SimManager(bot=Robot(x=3, y=8), target=[10, 2], map_data=sim_map)
+    # sim = SimManager(bot=Robot(x=18, y=2), target=[3, 8], map_data=sim_map)
 
-cv2.imshow('0', cv2.flip(img, 0))
+    
+    net.reset()
+    while sim.t < simulation_seconds:
+        inputs = sim.get_state()
+        action = net.advance(inputs, time_const, time_const)
+        sim.sample_step([action[0], action[1], 0])
+        if sim.bot_collision:
+            print('Failed!')
+            break
+
+    for point in sim.path:
+        time_rate = point[0] / simulation_seconds
+        cv2.circle(img, center=(int(point[1] / resol), int(point[2] / resol)), 
+                        radius=1, thickness=-1, 
+                        color=(255 - (255 * time_rate), 0, (255 * time_rate)))
+    cv2.circle(img, center=(int(sim.target[0] / resol), int(sim.target[1] / resol)), 
+    			    radius=3, thickness=-1, 
+    			    color=(0, 0, 0))
+
+    cv2.imshow('0', cv2.flip(img, 0))
+
+    cv2.waitKey(20)
 cv2.waitKey(0)
